@@ -661,3 +661,391 @@
 [2025-07-05T06:30:08.394Z] [INFO] 🎯 Added 6 entries to draw: Testdraw1
 [2025-07-05T06:30:08.395Z] [INFO] ✅ Donation processed successfully
 [2025-07-05T06:30:08.956Z] [INFO] Processed donation: 659745190382141453 -> $0.07 (6 entries)
+[2025-07-05T07:40:41.042Z] [INFO] Loaded event: interactionCreate
+[2025-07-05T07:40:41.075Z] [INFO] Loaded event: messageCreate
+[2025-07-05T07:40:41.077Z] [INFO] Loaded event: ready
+[2025-07-05T07:40:41.091Z] [INFO] Loaded command: admin
+[2025-07-05T07:40:41.093Z] [INFO] Loaded command: donate
+[2025-07-05T07:40:41.096Z] [INFO] Loaded command: draws
+[2025-07-05T07:40:41.099Z] [INFO] Loaded command: help
+[2025-07-05T07:40:41.101Z] [INFO] Loaded command: ping
+[2025-07-05T07:40:41.104Z] [INFO] Loaded command: price
+[2025-07-05T07:40:41.107Z] [INFO] Loaded command: help
+[2025-07-05T07:40:41.108Z] [ERROR] Failed to login: | Data: {"code":"TokenInvalid"}
+[2025-07-05T07:48:07.455Z] [INFO] Loaded event: interactionCreate
+[2025-07-05T07:48:07.489Z] [INFO] Loaded event: messageCreate
+[2025-07-05T07:48:07.491Z] [INFO] Loaded event: ready
+[2025-07-05T07:48:07.506Z] [INFO] Loaded command: admin
+[2025-07-05T07:48:07.509Z] [INFO] Loaded command: donate
+[2025-07-05T07:48:07.512Z] [INFO] Loaded command: draws
+[2025-07-05T07:48:07.514Z] [INFO] Loaded command: help
+[2025-07-05T07:48:07.516Z] [INFO] Loaded command: ping
+[2025-07-05T07:48:07.520Z] [INFO] Loaded command: price
+[2025-07-05T07:48:07.523Z] [INFO] Loaded command: help
+[2025-07-05T07:48:07.739Z] [ERROR] Failed to login: | Data: {"code":"TokenInvalid"}
+[2025-07-05T07:49:53.636Z] [INFO] Loaded event: interactionCreate
+[2025-07-05T07:49:53.669Z] [INFO] Loaded event: messageCreate
+[2025-07-05T07:49:53.671Z] [INFO] Loaded event: ready
+[2025-07-05T07:49:53.685Z] [INFO] Loaded command: admin
+[2025-07-05T07:49:53.687Z] [INFO] Loaded command: donate
+[2025-07-05T07:49:53.691Z] [INFO] Loaded command: draws
+[2025-07-05T07:49:53.693Z] [INFO] Loaded command: help
+[2025-07-05T07:49:53.695Z] [INFO] Loaded command: ping
+[2025-07-05T07:49:53.698Z] [INFO] Loaded command: price
+[2025-07-05T07:49:53.701Z] [INFO] Loaded command: help
+[2025-07-05T07:49:53.917Z] [ERROR] Failed to login: | Data: {"code":"TokenInvalid"}
+[2025-07-05T07:51:43.047Z] [INFO] Loaded event: interactionCreate
+[2025-07-05T07:51:43.081Z] [INFO] Loaded event: messageCreate
+[2025-07-05T07:51:43.083Z] [INFO] Loaded event: ready
+[2025-07-05T07:51:43.097Z] [INFO] Loaded command: admin
+[2025-07-05T07:51:43.100Z] [INFO] Loaded command: donate
+[2025-07-05T07:51:43.103Z] [INFO] Loaded command: draws
+[2025-07-05T07:51:43.106Z] [INFO] Loaded command: help
+[2025-07-05T07:51:43.107Z] [INFO] Loaded command: ping
+[2025-07-05T07:51:43.111Z] [INFO] Loaded command: price
+[2025-07-05T07:51:43.114Z] [INFO] Loaded command: help
+[2025-07-05T07:51:43.636Z] [INFO] Bot startup complete
+[2025-07-05T07:51:43.726Z] [INFO] Ready! Logged in as Donor Rewards#3082
+[2025-07-05T07:51:43.730Z] [INFO] ✅ Prepared command: admin
+[2025-07-05T07:51:43.730Z] [INFO] ✅ Prepared command: donate
+[2025-07-05T07:51:43.730Z] [INFO] ✅ Prepared command: draws
+[2025-07-05T07:51:43.731Z] [INFO] ✅ Prepared command: help
+[2025-07-05T07:51:43.731Z] [INFO] ✅ Prepared command: ping
+[2025-07-05T07:51:43.731Z] [INFO] ✅ Prepared command: price
+[2025-07-05T07:51:43.731Z] [INFO] Registering 6 global commands...
+[2025-07-05T07:51:44.155Z] [INFO] Successfully registered 6 global commands
+[2025-07-05T07:51:44.156Z] [INFO] ✅ Registered: admin
+[2025-07-05T07:51:44.156Z] [INFO] ✅ Registered: donate
+[2025-07-05T07:51:44.156Z] [INFO] ✅ Registered: draws
+[2025-07-05T07:51:44.156Z] [INFO] ✅ Registered: help
+[2025-07-05T07:51:44.157Z] [INFO] ✅ Registered: ping
+[2025-07-05T07:51:44.157Z] [INFO] ✅ Registered: price
+[2025-07-05T10:18:42.875Z] [INFO] Loaded event: interactionCreate
+[2025-07-05T10:18:42.910Z] [INFO] Loaded event: messageCreate
+[2025-07-05T10:18:42.912Z] [INFO] Loaded event: ready
+[2025-07-05T10:18:42.926Z] [INFO] Loaded command: admin
+[2025-07-05T10:18:42.928Z] [INFO] Loaded command: donate
+[2025-07-05T10:18:42.931Z] [INFO] Loaded command: draws
+[2025-07-05T10:18:42.934Z] [INFO] Loaded command: help
+[2025-07-05T10:18:42.936Z] [INFO] Loaded command: ping
+[2025-07-05T10:18:42.939Z] [INFO] Loaded command: price
+[2025-07-05T10:18:42.942Z] [INFO] Loaded command: help
+[2025-07-05T10:18:43.483Z] [INFO] Bot startup complete
+[2025-07-05T10:18:43.571Z] [INFO] Ready! Logged in as Donor Rewards#3082
+[2025-07-05T10:18:43.575Z] [INFO] ✅ Prepared command: admin
+[2025-07-05T10:18:43.576Z] [INFO] ✅ Prepared command: donate
+[2025-07-05T10:18:43.576Z] [INFO] ✅ Prepared command: draws
+[2025-07-05T10:18:43.576Z] [INFO] ✅ Prepared command: help
+[2025-07-05T10:18:43.577Z] [INFO] ✅ Prepared command: ping
+[2025-07-05T10:18:43.577Z] [INFO] ✅ Prepared command: price
+[2025-07-05T10:18:43.577Z] [INFO] Registering 6 global commands...
+[2025-07-05T10:18:43.775Z] [INFO] Successfully registered 6 global commands
+[2025-07-05T10:18:43.775Z] [INFO] ✅ Registered: admin
+[2025-07-05T10:18:43.775Z] [INFO] ✅ Registered: donate
+[2025-07-05T10:18:43.775Z] [INFO] ✅ Registered: draws
+[2025-07-05T10:18:43.775Z] [INFO] ✅ Registered: help
+[2025-07-05T10:18:43.776Z] [INFO] ✅ Registered: ping
+[2025-07-05T10:18:43.776Z] [INFO] ✅ Registered: price
+[2025-07-05T10:20:06.800Z] [WARN] ❌ Could not fetch price for SHIC from any API
+[2025-07-05T10:37:46.101Z] [INFO] Loaded event: interactionCreate
+[2025-07-05T10:37:46.137Z] [INFO] Loaded event: messageCreate
+[2025-07-05T10:37:46.139Z] [INFO] Loaded event: ready
+[2025-07-05T10:37:46.154Z] [INFO] Loaded command: admin
+[2025-07-05T10:37:46.157Z] [INFO] Loaded command: donate
+[2025-07-05T10:37:46.160Z] [INFO] Loaded command: draws
+[2025-07-05T10:37:46.162Z] [INFO] Loaded command: help
+[2025-07-05T10:37:46.164Z] [INFO] Loaded command: ping
+[2025-07-05T10:37:46.168Z] [INFO] Loaded command: price
+[2025-07-05T10:37:46.170Z] [INFO] Loaded command: help
+[2025-07-05T10:37:46.893Z] [INFO] Bot startup complete
+[2025-07-05T10:37:47.128Z] [INFO] Ready! Logged in as Donor Rewards#3082
+[2025-07-05T10:37:47.132Z] [INFO] ✅ Prepared command: admin
+[2025-07-05T10:37:47.132Z] [INFO] ✅ Prepared command: donate
+[2025-07-05T10:37:47.132Z] [INFO] ✅ Prepared command: draws
+[2025-07-05T10:37:47.133Z] [INFO] ✅ Prepared command: help
+[2025-07-05T10:37:47.133Z] [INFO] ✅ Prepared command: ping
+[2025-07-05T10:37:47.133Z] [INFO] ✅ Prepared command: price
+[2025-07-05T10:37:47.133Z] [INFO] Registering 6 global commands...
+[2025-07-05T10:37:47.457Z] [INFO] Successfully registered 6 global commands
+[2025-07-05T10:37:47.457Z] [INFO] ✅ Registered: admin
+[2025-07-05T10:37:47.457Z] [INFO] ✅ Registered: donate
+[2025-07-05T10:37:47.458Z] [INFO] ✅ Registered: draws
+[2025-07-05T10:37:47.458Z] [INFO] ✅ Registered: help
+[2025-07-05T10:37:47.458Z] [INFO] ✅ Registered: ping
+[2025-07-05T10:37:47.458Z] [INFO] ✅ Registered: price
+[2025-07-05T10:38:18.377Z] [ERROR] Error handling price button interaction: | Data: {"requestBody":{"json":{"type":6}},"rawError":{"message":"Interaction has already been acknowledged.","code":40060},"code":40060,"status":400,"method":"POST","url":"https://discord.com/api/v10/interactions/1391005262063599616/aW50ZXJhY3Rpb246MTM5MTAwNTI2MjA2MzU5OTYxNjpLT3o5YkxHNVBIS1JVTUJ0SlZ4N0VnSHVYcmFFbFpOMDRKOXE0NUgwUFk0UmxCcnl5cDR4N1JJdjE0bU44ZmIyTzR1WUZRWnJQOFRHZ3hIeTdjUVRZNk42V0J5S3VBaTlzdTJiZ3JJemNWRERhWmVPTXZPREhjcElnbDBKNTBESQ/callback?with_response=false"}
+[2025-07-05T10:38:20.621Z] [ERROR] Error handling price button interaction: | Data: {"requestBody":{"json":{"type":6}},"rawError":{"message":"Interaction has already been acknowledged.","code":40060},"code":40060,"status":400,"method":"POST","url":"https://discord.com/api/v10/interactions/1391005271417159730/aW50ZXJhY3Rpb246MTM5MTAwNTI3MTQxNzE1OTczMDozcFU2Rm41aDBwS29ZVU9MVVVVSkhPSzFMbFA4QlhoZXJtZXRPem1BTWtNS3ZldlJIMThFdEd3TlVrTGt0Ymt6bkxNNDlqaEJmaEd0aEdFUWFNdFRLMGptVW5sTWNCRzgxb2pWeTczWXFad29WYjI2UzdBSUFQSHduY3p2UWZoQQ/callback?with_response=false"}
+[2025-07-05T10:38:20.694Z] [ERROR] Error handling price button interaction: | Data: {"requestBody":{"json":{"type":6}},"rawError":{"message":"Interaction has already been acknowledged.","code":40060},"code":40060,"status":400,"method":"POST","url":"https://discord.com/api/v10/interactions/1391005271417159730/aW50ZXJhY3Rpb246MTM5MTAwNTI3MTQxNzE1OTczMDozcFU2Rm41aDBwS29ZVU9MVVVVSkhPSzFMbFA4QlhoZXJtZXRPem1BTWtNS3ZldlJIMThFdEd3TlVrTGt0Ymt6bkxNNDlqaEJmaEd0aEdFUWFNdFRLMGptVW5sTWNCRzgxb2pWeTczWXFad29WYjI2UzdBSUFQSHduY3p2UWZoQQ/callback?with_response=false"}
+[2025-07-05T10:38:20.723Z] [WARN] CoinGecko API returned status 429 for AVAX
+[2025-07-05T10:38:20.726Z] [WARN] CoinGecko API returned status 429 for BNB
+[2025-07-05T10:38:20.729Z] [WARN] CoinGecko API returned status 429 for BONC
+[2025-07-05T10:38:20.731Z] [WARN] CoinGecko API returned status 429 for ADA
+[2025-07-05T10:38:20.733Z] [WARN] CoinGecko API returned status 429 for PEPE
+[2025-07-05T10:38:20.737Z] [WARN] CoinGecko API returned status 429 for TON
+[2025-07-05T10:38:20.741Z] [WARN] CoinGecko API returned status 429 for TRON
+[2025-07-05T10:38:20.747Z] [WARN] CoinGecko API returned status 429 for BTC
+[2025-07-05T10:38:20.753Z] [WARN] CoinGecko API returned status 429 for USDC
+[2025-07-05T10:38:20.828Z] [WARN] ❌ Could not fetch price for SHIC from any API
+[2025-07-05T10:38:20.937Z] [WARN] ❌ Could not fetch price for BONC from any API
+[2025-07-05T10:38:21.268Z] [WARN] CoinPaprika API returned status 404 for TON
+[2025-07-05T10:49:23.611Z] [INFO] Loaded event: interactionCreate
+[2025-07-05T10:49:23.644Z] [INFO] Loaded event: messageCreate
+[2025-07-05T10:49:23.647Z] [INFO] Loaded event: ready
+[2025-07-05T10:49:23.656Z] [INFO] Loaded command: achievements
+[2025-07-05T10:49:23.667Z] [INFO] Loaded command: admin
+[2025-07-05T10:49:23.670Z] [INFO] Loaded command: donate
+[2025-07-05T10:49:23.673Z] [INFO] Loaded command: draws
+[2025-07-05T10:49:23.676Z] [INFO] Loaded command: help
+[2025-07-05T10:49:23.680Z] [INFO] Loaded command: leaderboard
+[2025-07-05T10:49:23.683Z] [INFO] Loaded command: lucky
+[2025-07-05T10:49:23.686Z] [INFO] Loaded command: milestones
+[2025-07-05T10:49:23.688Z] [INFO] Loaded command: ping
+[2025-07-05T10:49:23.692Z] [INFO] Loaded command: price
+[2025-07-05T10:49:23.697Z] [INFO] Loaded command: referral
+[2025-07-05T10:49:23.701Z] [INFO] Loaded command: user
+[2025-07-05T10:49:24.275Z] [INFO] Bot startup complete
+[2025-07-05T10:49:24.339Z] [INFO] Ready! Logged in as Donor Rewards#3082
+[2025-07-05T10:49:24.341Z] [INFO] ✅ Prepared command: achievements
+[2025-07-05T10:49:24.343Z] [INFO] ✅ Prepared command: admin
+[2025-07-05T10:49:24.343Z] [INFO] ✅ Prepared command: donate
+[2025-07-05T10:49:24.343Z] [INFO] ✅ Prepared command: draws
+[2025-07-05T10:49:24.343Z] [INFO] ✅ Prepared command: help
+[2025-07-05T10:49:24.344Z] [INFO] ✅ Prepared command: leaderboard
+[2025-07-05T10:49:24.344Z] [INFO] ✅ Prepared command: lucky
+[2025-07-05T10:49:24.344Z] [INFO] ✅ Prepared command: milestones
+[2025-07-05T10:49:24.344Z] [INFO] ✅ Prepared command: ping
+[2025-07-05T10:49:24.344Z] [INFO] ✅ Prepared command: price
+[2025-07-05T10:49:24.345Z] [INFO] ✅ Prepared command: referral
+[2025-07-05T10:49:24.345Z] [INFO] ✅ Prepared command: user
+[2025-07-05T10:49:24.345Z] [INFO] Registering 12 global commands...
+[2025-07-05T10:49:24.670Z] [INFO] Successfully registered 12 global commands
+[2025-07-05T10:49:24.671Z] [INFO] ✅ Registered: achievements
+[2025-07-05T10:49:24.671Z] [INFO] ✅ Registered: admin
+[2025-07-05T10:49:24.671Z] [INFO] ✅ Registered: donate
+[2025-07-05T10:49:24.671Z] [INFO] ✅ Registered: draws
+[2025-07-05T10:49:24.671Z] [INFO] ✅ Registered: help
+[2025-07-05T10:49:24.671Z] [INFO] ✅ Registered: leaderboard
+[2025-07-05T10:49:24.671Z] [INFO] ✅ Registered: lucky
+[2025-07-05T10:49:24.672Z] [INFO] ✅ Registered: milestones
+[2025-07-05T10:49:24.672Z] [INFO] ✅ Registered: ping
+[2025-07-05T10:49:24.672Z] [INFO] ✅ Registered: price
+[2025-07-05T10:49:24.672Z] [INFO] ✅ Registered: referral
+[2025-07-05T10:49:24.672Z] [INFO] ✅ Registered: user
+[2025-07-05T10:54:12.964Z] [INFO] Loaded event: interactionCreate
+[2025-07-05T10:54:12.996Z] [INFO] Loaded event: messageCreate
+[2025-07-05T10:54:12.998Z] [INFO] Loaded event: ready
+[2025-07-05T10:54:13.007Z] [INFO] Loaded command: achievements
+[2025-07-05T10:54:13.019Z] [INFO] Loaded command: admin
+[2025-07-05T10:54:13.021Z] [INFO] Loaded command: donate
+[2025-07-05T10:54:13.024Z] [INFO] Loaded command: draws
+[2025-07-05T10:54:13.027Z] [INFO] Loaded command: help
+[2025-07-05T10:54:13.029Z] [INFO] Loaded command: leaderboard
+[2025-07-05T10:54:13.033Z] [INFO] Loaded command: lucky
+[2025-07-05T10:54:13.035Z] [INFO] Loaded command: milestones
+[2025-07-05T10:54:13.038Z] [INFO] Loaded command: ping
+[2025-07-05T10:54:13.041Z] [INFO] Loaded command: price
+[2025-07-05T10:54:13.044Z] [INFO] Loaded command: referral
+[2025-07-05T10:54:13.048Z] [INFO] Loaded command: user
+[2025-07-05T10:54:14.358Z] [INFO] Bot startup complete
+[2025-07-05T10:54:14.800Z] [INFO] Ready! Logged in as Donor Rewards#3082
+[2025-07-05T10:54:14.803Z] [INFO] ✅ Prepared command: achievements
+[2025-07-05T10:54:14.805Z] [INFO] ✅ Prepared command: admin
+[2025-07-05T10:54:14.805Z] [INFO] ✅ Prepared command: donate
+[2025-07-05T10:54:14.805Z] [INFO] ✅ Prepared command: draws
+[2025-07-05T10:54:14.805Z] [INFO] ✅ Prepared command: help
+[2025-07-05T10:54:14.805Z] [INFO] ✅ Prepared command: leaderboard
+[2025-07-05T10:54:14.806Z] [INFO] ✅ Prepared command: lucky
+[2025-07-05T10:54:14.806Z] [INFO] ✅ Prepared command: milestones
+[2025-07-05T10:54:14.806Z] [INFO] ✅ Prepared command: ping
+[2025-07-05T10:54:14.806Z] [INFO] ✅ Prepared command: price
+[2025-07-05T10:54:14.807Z] [INFO] ✅ Prepared command: referral
+[2025-07-05T10:54:14.807Z] [INFO] ✅ Prepared command: user
+[2025-07-05T10:54:14.807Z] [INFO] Registering 12 global commands...
+[2025-07-05T10:54:15.170Z] [INFO] Successfully registered 12 global commands
+[2025-07-05T10:54:15.170Z] [INFO] ✅ Registered: achievements
+[2025-07-05T10:54:15.170Z] [INFO] ✅ Registered: admin
+[2025-07-05T10:54:15.171Z] [INFO] ✅ Registered: donate
+[2025-07-05T10:54:15.171Z] [INFO] ✅ Registered: draws
+[2025-07-05T10:54:15.171Z] [INFO] ✅ Registered: help
+[2025-07-05T10:54:15.171Z] [INFO] ✅ Registered: leaderboard
+[2025-07-05T10:54:15.171Z] [INFO] ✅ Registered: lucky
+[2025-07-05T10:54:15.171Z] [INFO] ✅ Registered: milestones
+[2025-07-05T10:54:15.171Z] [INFO] ✅ Registered: ping
+[2025-07-05T10:54:15.171Z] [INFO] ✅ Registered: price
+[2025-07-05T10:54:15.172Z] [INFO] ✅ Registered: referral
+[2025-07-05T10:54:15.172Z] [INFO] ✅ Registered: user
+[2025-07-05T10:54:59.610Z] [INFO] Admin command executed: fix_achievements by daimondsteel2509_aegs
+[2025-07-05T10:55:00.054Z] [INFO] Processing user 659745190382141453:
+[2025-07-05T10:55:00.055Z] [INFO]   - Total donated: $6.86
+[2025-07-05T10:55:00.055Z] [INFO]   - Donations count: 5
+[2025-07-05T10:55:00.055Z] [INFO]   - Wins: 2
+[2025-07-05T10:55:00.055Z] [INFO]   - Longest streak: 0
+[2025-07-05T10:55:00.055Z] [INFO]   - Current achievements: lucky_winner
+[2025-07-05T10:55:00.055Z] [INFO] First Steps check: donations=5
+[2025-07-05T10:55:00.056Z] [INFO] Achievement check for first_steps: QUALIFIES
+[2025-07-05T10:55:00.056Z] [INFO] 🏆 Fixed achievement: First Steps for user 659745190382141453
+[2025-07-05T10:55:00.056Z] [INFO] Generous Donor check: totalDonated=6.856536419957828
+[2025-07-05T10:55:00.056Z] [INFO] Achievement check for generous_donor: DOES NOT QUALIFY
+[2025-07-05T10:55:00.056Z] [INFO] User 659745190382141453 does not qualify for achievement: Generous Donor
+[2025-07-05T10:55:00.056Z] [INFO]   - Total donated: $6.86
+[2025-07-05T10:55:00.056Z] [INFO] Big Spender check: totalDonated=6.856536419957828
+[2025-07-05T10:55:00.057Z] [INFO] Achievement check for big_spender: DOES NOT QUALIFY
+[2025-07-05T10:55:00.057Z] [INFO] User 659745190382141453 does not qualify for achievement: Big Spender
+[2025-07-05T10:55:00.057Z] [INFO]   - Total donated: $6.86
+[2025-07-05T10:55:00.057Z] [INFO] Whale check: totalDonated=6.856536419957828
+[2025-07-05T10:55:00.057Z] [INFO] Achievement check for whale: DOES NOT QUALIFY
+[2025-07-05T10:55:00.057Z] [INFO] User 659745190382141453 does not qualify for achievement: Whale
+[2025-07-05T10:55:00.057Z] [INFO]   - Total donated: $6.86
+[2025-07-05T10:55:00.058Z] [INFO] User 659745190382141453 already has achievement: Lucky Winner
+[2025-07-05T10:55:00.058Z] [INFO] Streak Master check: longest=0
+[2025-07-05T10:55:00.058Z] [INFO] Achievement check for streak_master: DOES NOT QUALIFY
+[2025-07-05T10:55:00.058Z] [INFO] User 659745190382141453 does not qualify for achievement: Streak Master
+[2025-07-05T10:55:00.058Z] [INFO]   - Longest streak: 0
+[2025-07-05T10:55:00.058Z] [INFO] Skipping user 1112677055662919692 - No donations
+[2025-07-05T10:55:00.059Z] [INFO] Skipping user 1368964830114877541 - No donations
+[2025-07-05T10:55:00.059Z] [INFO] Skipping user 268317949893279745 - No donations
+[2025-07-05T10:55:00.059Z] [INFO] Skipping user 1306325116774383617 - No donations
+[2025-07-05T10:55:00.059Z] [INFO] Skipping user 458048449041006592 - No donations
+[2025-07-05T10:55:00.059Z] [INFO] Skipping user 778507526261702686 - No donations
+[2025-07-05T10:55:00.059Z] [INFO] Skipping user 1025473625886830727 - No donations
+[2025-07-05T10:55:00.059Z] [INFO] Skipping user 284732630279127043 - No donations
+[2025-07-05T10:55:00.059Z] [INFO] Skipping user 1351456484046667799 - No donations
+[2025-07-05T10:55:00.060Z] [INFO] Skipping user 757811037880975490 - No donations
+[2025-07-05T10:55:00.060Z] [INFO] Skipping user 855249903911305216 - No donations
+[2025-07-05T10:55:00.060Z] [INFO] Skipping user 544589842282053694 - No donations
+[2025-07-05T10:55:00.060Z] [INFO] Skipping user 788083598128840716 - No donations
+[2025-07-05T10:55:00.060Z] [INFO] Skipping user 882795921631490109 - No donations
+[2025-07-05T10:55:00.060Z] [INFO] Skipping user 421519277661880320 - No donations
+[2025-07-05T10:55:00.060Z] [INFO] Skipping user 554862480564682754 - No donations
+[2025-07-05T10:55:00.060Z] [INFO] Skipping user 987508062493491221 - No donations
+[2025-07-05T10:55:00.060Z] [INFO] Skipping user 716036633761153114 - No donations
+[2025-07-05T10:55:00.061Z] [INFO] Skipping user 544259984607674378 - No donations
+[2025-07-05T10:55:00.061Z] [INFO] Skipping user 1176369474878849094 - No donations
+[2025-07-05T10:55:00.061Z] [INFO] Skipping user 284743374982873089 - No donations
+[2025-07-05T10:55:00.061Z] [INFO] Skipping user 835709861039833139 - No donations
+[2025-07-05T10:55:00.061Z] [INFO] Skipping user 1196874848975212545 - No donations
+[2025-07-05T10:55:00.061Z] [INFO] Skipping user 840784353993687061 - No donations
+[2025-07-05T10:55:00.061Z] [INFO] Skipping user 185830065764827137 - No donations
+[2025-07-05T10:55:00.062Z] [INFO] Skipping user 1315295767879090314 - No donations
+[2025-07-05T10:55:00.062Z] [INFO] Skipping user 339172444029976578 - No donations
+[2025-07-05T10:55:00.062Z] [INFO] Skipping user 717875829622833162 - No donations
+[2025-07-05T10:55:00.062Z] [INFO] Skipping user 1181247806397239348 - No donations
+[2025-07-05T10:55:00.062Z] [INFO] Skipping user 883438084400746527 - No donations
+[2025-07-05T10:55:00.062Z] [INFO] Skipping user 958718869508358205 - No donations
+[2025-07-05T10:55:00.062Z] [INFO] Skipping user 293547148031688705 - No donations
+[2025-07-05T10:55:00.062Z] [INFO] Skipping user 886879667783622658 - No donations
+[2025-07-05T10:55:00.063Z] [INFO] Skipping user 403606490285604864 - No donations
+[2025-07-05T10:55:00.063Z] [INFO] Skipping user 854196399796256768 - No donations
+[2025-07-05T10:55:00.063Z] [INFO] Skipping user 136461374812323840 - No donations
+[2025-07-05T10:55:00.063Z] [INFO] Skipping user 532853547814092811 - No donations
+[2025-07-05T10:55:00.063Z] [INFO] Skipping user 1198804989687103599 - No donations
+[2025-07-05T10:55:00.063Z] [INFO] Skipping user 717106914328182784 - No donations
+[2025-07-05T10:55:00.063Z] [INFO] Skipping user 1143305132629577748 - No donations
+[2025-07-05T10:55:00.064Z] [INFO] Skipping user 1130560497150857356 - No donations
+[2025-07-05T10:55:00.065Z] [INFO] Skipping user 570190626898051084 - No donations
+[2025-07-05T10:55:00.065Z] [INFO] Skipping user 622586234354663486 - No donations
+[2025-07-05T10:55:00.065Z] [INFO] Skipping user 776384109945552916 - No donations
+[2025-07-05T10:55:00.065Z] [INFO] Skipping user 859131200395935756 - No donations
+[2025-07-05T10:55:00.065Z] [INFO] Skipping user 139841584207364096 - No donations
+[2025-07-05T10:55:00.065Z] [INFO] Skipping user 1007308769472024666 - No donations
+[2025-07-05T10:55:00.065Z] [INFO] Skipping user 1323559800839208981 - No donations
+[2025-07-05T10:55:00.065Z] [INFO] Skipping user 1094914091560210483 - No donations
+[2025-07-05T10:55:00.066Z] [INFO] Skipping user 708425896570388561 - No donations
+[2025-07-05T10:55:00.066Z] [INFO] Skipping user 1072505993373692025 - No donations
+[2025-07-05T10:55:00.066Z] [INFO] Skipping user 437375311840018432 - No donations
+[2025-07-05T10:55:00.066Z] [INFO] Skipping user 930172814558904381 - No donations
+[2025-07-05T10:55:00.473Z] [INFO] Achievement fix completed: 1 achievements assigned to 54 users by daimondsteel2509_aegs
+[2025-07-05T10:55:23.214Z] [WARN] CoinGecko API returned status 429 for USDC
+[2025-07-05T10:55:23.219Z] [WARN] CoinGecko API returned status 429 for TRON
+[2025-07-05T10:55:23.222Z] [WARN] CoinGecko API returned status 429 for PEPE
+[2025-07-05T10:55:23.225Z] [WARN] CoinGecko API returned status 429 for BONC
+[2025-07-05T10:55:23.228Z] [WARN] CoinGecko API returned status 429 for DOGE
+[2025-07-05T10:55:23.235Z] [WARN] CoinGecko API returned status 429 for TON
+[2025-07-05T10:55:23.238Z] [WARN] CoinGecko API returned status 429 for ETH
+[2025-07-05T10:55:23.242Z] [WARN] CoinGecko API returned status 429 for AVAX
+[2025-07-05T10:55:23.245Z] [WARN] CoinGecko API returned status 429 for BNB
+[2025-07-05T10:55:23.249Z] [WARN] CoinGecko API returned status 429 for ADA
+[2025-07-05T10:55:23.266Z] [WARN] CoinGecko API returned status 429 for PEP
+[2025-07-05T10:55:23.364Z] [WARN] ❌ Could not fetch price for SHIC from any API
+[2025-07-05T10:55:23.387Z] [WARN] ❌ Could not fetch price for BONC from any API
+[2025-07-05T10:55:23.771Z] [WARN] CoinPaprika API returned status 404 for TON
+[2025-07-05T10:55:45.094Z] [WARN] ❌ Could not fetch price for SHIBACOIN from any API
+[2025-07-05T10:56:08.699Z] [INFO] Admin command executed: fix_achievements by daimondsteel2509_aegs
+[2025-07-05T10:56:08.933Z] [INFO] Processing user 659745190382141453:
+[2025-07-05T10:56:08.933Z] [INFO]   - Total donated: $6.86
+[2025-07-05T10:56:08.933Z] [INFO]   - Donations count: 5
+[2025-07-05T10:56:08.933Z] [INFO]   - Wins: 2
+[2025-07-05T10:56:08.934Z] [INFO]   - Longest streak: 0
+[2025-07-05T10:56:08.934Z] [INFO]   - Current achievements: lucky_winner, first_steps
+[2025-07-05T10:56:08.934Z] [INFO] User 659745190382141453 already has achievement: First Steps
+[2025-07-05T10:56:08.934Z] [INFO] Generous Donor check: totalDonated=6.856536419957828
+[2025-07-05T10:56:08.934Z] [INFO] Achievement check for generous_donor: DOES NOT QUALIFY
+[2025-07-05T10:56:08.934Z] [INFO] User 659745190382141453 does not qualify for achievement: Generous Donor
+[2025-07-05T10:56:08.934Z] [INFO]   - Total donated: $6.86
+[2025-07-05T10:56:08.935Z] [INFO] Big Spender check: totalDonated=6.856536419957828
+[2025-07-05T10:56:08.935Z] [INFO] Achievement check for big_spender: DOES NOT QUALIFY
+[2025-07-05T10:56:08.935Z] [INFO] User 659745190382141453 does not qualify for achievement: Big Spender
+[2025-07-05T10:56:08.935Z] [INFO]   - Total donated: $6.86
+[2025-07-05T10:56:08.935Z] [INFO] Whale check: totalDonated=6.856536419957828
+[2025-07-05T10:56:08.935Z] [INFO] Achievement check for whale: DOES NOT QUALIFY
+[2025-07-05T10:56:08.935Z] [INFO] User 659745190382141453 does not qualify for achievement: Whale
+[2025-07-05T10:56:08.935Z] [INFO]   - Total donated: $6.86
+[2025-07-05T10:56:08.936Z] [INFO] User 659745190382141453 already has achievement: Lucky Winner
+[2025-07-05T10:56:08.936Z] [INFO] Streak Master check: longest=0
+[2025-07-05T10:56:08.936Z] [INFO] Achievement check for streak_master: DOES NOT QUALIFY
+[2025-07-05T10:56:08.936Z] [INFO] User 659745190382141453 does not qualify for achievement: Streak Master
+[2025-07-05T10:56:08.936Z] [INFO]   - Longest streak: 0
+[2025-07-05T10:56:08.936Z] [INFO] Skipping user 1112677055662919692 - No donations
+[2025-07-05T10:56:08.936Z] [INFO] Skipping user 1368964830114877541 - No donations
+[2025-07-05T10:56:08.936Z] [INFO] Skipping user 268317949893279745 - No donations
+[2025-07-05T10:56:08.936Z] [INFO] Skipping user 1306325116774383617 - No donations
+[2025-07-05T10:56:08.937Z] [INFO] Skipping user 458048449041006592 - No donations
+[2025-07-05T10:56:08.937Z] [INFO] Skipping user 778507526261702686 - No donations
+[2025-07-05T10:56:08.937Z] [INFO] Skipping user 1025473625886830727 - No donations
+[2025-07-05T10:56:08.937Z] [INFO] Skipping user 284732630279127043 - No donations
+[2025-07-05T10:56:08.937Z] [INFO] Skipping user 1351456484046667799 - No donations
+[2025-07-05T10:56:08.937Z] [INFO] Skipping user 757811037880975490 - No donations
+[2025-07-05T10:56:08.937Z] [INFO] Skipping user 855249903911305216 - No donations
+[2025-07-05T10:56:08.937Z] [INFO] Skipping user 544589842282053694 - No donations
+[2025-07-05T10:56:08.938Z] [INFO] Skipping user 788083598128840716 - No donations
+[2025-07-05T10:56:08.938Z] [INFO] Skipping user 882795921631490109 - No donations
+[2025-07-05T10:56:08.938Z] [INFO] Skipping user 421519277661880320 - No donations
+[2025-07-05T10:56:08.938Z] [INFO] Skipping user 554862480564682754 - No donations
+[2025-07-05T10:56:08.938Z] [INFO] Skipping user 987508062493491221 - No donations
+[2025-07-05T10:56:08.938Z] [INFO] Skipping user 716036633761153114 - No donations
+[2025-07-05T10:56:08.938Z] [INFO] Skipping user 544259984607674378 - No donations
+[2025-07-05T10:56:08.938Z] [INFO] Skipping user 1176369474878849094 - No donations
+[2025-07-05T10:56:08.939Z] [INFO] Skipping user 284743374982873089 - No donations
+[2025-07-05T10:56:08.939Z] [INFO] Skipping user 835709861039833139 - No donations
+[2025-07-05T10:56:08.939Z] [INFO] Skipping user 1196874848975212545 - No donations
+[2025-07-05T10:56:08.939Z] [INFO] Skipping user 840784353993687061 - No donations
+[2025-07-05T10:56:08.939Z] [INFO] Skipping user 185830065764827137 - No donations
+[2025-07-05T10:56:08.939Z] [INFO] Skipping user 1315295767879090314 - No donations
+[2025-07-05T10:56:08.939Z] [INFO] Skipping user 339172444029976578 - No donations
+[2025-07-05T10:56:08.939Z] [INFO] Skipping user 717875829622833162 - No donations
+[2025-07-05T10:56:08.940Z] [INFO] Skipping user 1181247806397239348 - No donations
+[2025-07-05T10:56:08.940Z] [INFO] Skipping user 883438084400746527 - No donations
+[2025-07-05T10:56:08.940Z] [INFO] Skipping user 958718869508358205 - No donations
+[2025-07-05T10:56:08.940Z] [INFO] Skipping user 293547148031688705 - No donations
+[2025-07-05T10:56:08.940Z] [INFO] Skipping user 886879667783622658 - No donations
+[2025-07-05T10:56:08.940Z] [INFO] Skipping user 403606490285604864 - No donations
+[2025-07-05T10:56:08.940Z] [INFO] Skipping user 854196399796256768 - No donations
+[2025-07-05T10:56:08.940Z] [INFO] Skipping user 136461374812323840 - No donations
+[2025-07-05T10:56:08.941Z] [INFO] Skipping user 532853547814092811 - No donations
+[2025-07-05T10:56:08.941Z] [INFO] Skipping user 1198804989687103599 - No donations
+[2025-07-05T10:56:08.941Z] [INFO] Skipping user 717106914328182784 - No donations
+[2025-07-05T10:56:08.941Z] [INFO] Skipping user 1143305132629577748 - No donations
+[2025-07-05T10:56:08.941Z] [INFO] Skipping user 1130560497150857356 - No donations
+[2025-07-05T10:56:08.941Z] [INFO] Skipping user 570190626898051084 - No donations
+[2025-07-05T10:56:08.941Z] [INFO] Skipping user 622586234354663486 - No donations
+[2025-07-05T10:56:08.941Z] [INFO] Skipping user 776384109945552916 - No donations
+[2025-07-05T10:56:08.941Z] [INFO] Skipping user 859131200395935756 - No donations
+[2025-07-05T10:56:08.942Z] [INFO] Skipping user 139841584207364096 - No donations
+[2025-07-05T10:56:08.942Z] [INFO] Skipping user 1007308769472024666 - No donations
+[2025-07-05T10:56:08.942Z] [INFO] Skipping user 1323559800839208981 - No donations
+[2025-07-05T10:56:08.942Z] [INFO] Skipping user 1094914091560210483 - No donations
+[2025-07-05T10:56:08.942Z] [INFO] Skipping user 708425896570388561 - No donations
+[2025-07-05T10:56:08.942Z] [INFO] Skipping user 1072505993373692025 - No donations
+[2025-07-05T10:56:08.942Z] [INFO] Skipping user 437375311840018432 - No donations
+[2025-07-05T10:56:08.942Z] [INFO] Skipping user 930172814558904381 - No donations
+[2025-07-05T10:56:09.336Z] [INFO] Achievement fix completed: 0 achievements assigned to 54 users by daimondsteel2509_aegs

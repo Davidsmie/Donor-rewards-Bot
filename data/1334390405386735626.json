@@ -161,7 +161,8 @@
       ],
       "referralCode": "IJWLMZ",
       "achievements": [
-        "lucky_winner"
+        "lucky_winner",
+        "first_steps"
       ],
       "donations": [
         {
@@ -204,6 +205,11 @@
         "current": 5,
         "longest": 5,
         "lastDonation": 1751697008391
+      },
+      "streak": {
+        "current": 0,
+        "longest": 0,
+        "lastDonation": 0
       }
     },
     "1112677055662919692": {
