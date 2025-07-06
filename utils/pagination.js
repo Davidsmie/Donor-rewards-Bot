@@ -486,9 +486,16 @@ async function handleActionButton(interaction, customId, category, action, guild
     }
   } catch (error) {
     logger.error("Error handling action button:", error)
-    await interaction.followUp({
-      content: "❌ An error occurred while processing your request.",
-      ephemeral: true
-    })
+    logger.error("Error stack:", error.stack)
+    logger.error("Action details:", { customId, categoryId: category.id, action, guildId })
+    
+    try {
+      await interaction.followUp({
+        content: "❌ An error occurred while processing your request.",
+        ephemeral: true
+      })
+    } catch (followUpError) {
+      logger.error("Error sending followUp:", followUpError)
+    }
   }
 }

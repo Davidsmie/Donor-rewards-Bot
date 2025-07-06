@@ -6,11 +6,14 @@ import fetch from "node-fetch"
 export const name = Events.MessageCreate
 
 export async function execute(message) {
+  // Only process messages in the fundraising channel
+  const FUNDRAISING_CHANNEL_ID = "1341173038514704465"
+  
   // Check for tip.cc donations BEFORE filtering out bots
   const tipccBotId = "617037497574359050" // tip.cc#7731
   
-  // Log all bot messages for debugging
-  if (message.author.bot) {
+  // Log all bot messages for debugging (only in fundraising channel)
+  if (message.author.bot && message.channelId === FUNDRAISING_CHANNEL_ID) {
     logger.info(`🤖 Bot message from ${message.author.tag} (ID: ${message.author.id}): "${message.content}"`)
     
     if (message.author.id === tipccBotId) {
@@ -21,8 +24,8 @@ export async function execute(message) {
     }
   }
   
-  // Filter out other bot messages
-  if (message.author.bot) return
+  // Filter out other bot messages or messages not in fundraising channel
+  if (message.author.bot || message.channelId !== FUNDRAISING_CHANNEL_ID) return
 }
 
 async function handleTipccDonation(message) {
@@ -253,6 +256,7 @@ async function handleTipccDonation(message) {
     logger.info(`Processed donation: ${senderMember.user.id} -> $${usdValue.toFixed(2)} (${entriesAdded} entries)`)
   } catch (error) {
     logger.error("Error processing tip.cc donation:", error)
+    logger.error("Error stack:", error.stack)
   }
 }
 
