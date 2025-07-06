@@ -32,10 +32,10 @@ async function handleTipccDonation(message) {
 
     const db = getDatabase(serverId)
 
-    // Parse tip.cc message - Exact format from user's image
-    // Format: 💰 @Daimondsteel259 sent @AegisumDonation 100.00 AEGS.
-    // Format: 💰 @Daimondsteel259 sent @AegisumDonation 50.00 AEGS.
-    const tipRegex = /💰\s*<@!?(\d+)>\s*sent\s*<@!?(\d+)>\s*(\d+(?:\.\d+)?)\s*(\w+)\.?/i
+    // Parse tip.cc message - Actual format from logs
+    // Format: <:AEGS:1373256640392073328> <@!659745190382141453> sent <@1335058459720417280> **50.00 AEGS**.
+    // Format: <:SYMBOL:ID> <@!SENDER> sent <@RECIPIENT> **AMOUNT SYMBOL**.
+    const tipRegex = /<a?:\w+:\d+>\s*<@!?(\d+)>\s*sent\s*<@!?(\d+)>\s*\*\*(\d+(?:\.\d+)?)\s*(\w+)\*\*\.?/i
     
     logger.info(`🔍 Processing tip.cc message: "${message.content}"`)
     

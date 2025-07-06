@@ -71,6 +71,29 @@ export function createCategoryButtons(categories, customId) {
 }
 
 /**
+ * Create action buttons for interactive settings
+ * @param {Array} actions - Array of action objects with {id, label, style, emoji}
+ * @param {string} customId - Custom ID prefix for buttons
+ * @returns {ActionRowBuilder} - Action row with action buttons
+ */
+export function createActionButtons(actions, customId) {
+  const row = new ActionRowBuilder()
+
+  for (const action of actions) {
+    row.addComponents(
+      new ButtonBuilder()
+        .setCustomId(`${customId}_action_${action.id}`)
+        .setLabel(action.label)
+        .setStyle(action.style || ButtonStyle.Primary)
+        .setEmoji(action.emoji || null)
+        .setDisabled(action.disabled || false)
+    )
+  }
+
+  return row
+}
+
+/**
  * Handle pagination interaction
  * @param {Object} interaction - Discord interaction
  * @param {Array} pages - Array of embed pages
@@ -250,7 +273,22 @@ export async function handleCategoryMenu(interaction, menuData, customId, timeou
     if (!category) return
 
     // Generate category content
-    const categoryPages = await category.generatePages()
+    const categoryData = await category.generatePages()
+    
+    // Handle both array format (embeds) and object format (embeds + components)
+    let categoryPages, categoryComponents = []
+    
+    if (Array.isArray(categoryData)) {
+      categoryPages = categoryData
+    } else if (categoryData.embeds) {
+      categoryPages = categoryData.embeds
+      categoryComponents = categoryData.components || []
+    } else {
+      return buttonInteraction.reply({
+        content: `❌ No data available for ${category.name}.`,
+        ephemeral: true
+      })
+    }
     
     if (categoryPages.length === 0) {
       return buttonInteraction.reply({
@@ -265,7 +303,7 @@ export async function handleCategoryMenu(interaction, menuData, customId, timeou
 
     const updateCategoryView = async (page) => {
       const embed = categoryPages[page]
-      const components = []
+      const components = [...categoryComponents] // Copy category-specific components
 
       // Add pagination if multiple pages
       if (totalPages > 1) {
@@ -302,7 +340,47 @@ export async function handleCategoryMenu(interaction, menuData, customId, timeou
         })
       }
 
-      const action = catInteraction.customId.split('_').pop()
+      const customIdParts = catInteraction.customId.split('_')
+      const action = customIdParts[customIdParts.length - 1]
+      const actionType = customIdParts[customIdParts.length - 2]
+
+      // Handle action buttons (privacy, draw selection, etc.)
+      if (actionType === 'action') {
+        await handleActionButton(catInteraction, customId, category, action, interaction.guildId)
+        
+        // Refresh the category view
+        const refreshedData = await category.generatePages()
+        let refreshedPages, refreshedComponents = []
+        
+        if (Array.isArray(refreshedData)) {
+          refreshedPages = refreshedData
+        } else if (refreshedData.embeds) {
+          refreshedPages = refreshedData.embeds
+          refreshedComponents = refreshedData.components || []
+        }
+        
+        if (refreshedPages && refreshedPages.length > 0) {
+          const embed = refreshedPages[currentPage]
+          const components = [...refreshedComponents]
+          
+          if (refreshedPages.length > 1) {
+            const paginationRow = createPaginationButtons(currentPage, refreshedPages.length, `${customId}_cat`)
+            components.push(paginationRow)
+          }
+          
+          const backRow = new ActionRowBuilder()
+            .addComponents(
+              new ButtonBuilder()
+                .setCustomId(`${customId}_back`)
+                .setLabel("🔙 Back to Menu")
+                .setStyle(ButtonStyle.Secondary)
+            )
+          components.push(backRow)
+          
+          await catInteraction.update({ embeds: [embed], components })
+        }
+        return
+      }
 
       if (action === 'back') {
         // Return to main menu
@@ -343,4 +421,74 @@ export async function handleCategoryMenu(interaction, menuData, customId, timeou
       logger.error("Error disabling category menu buttons:", error)
     }
   })
+}
+
+/**
+ * Handle action button interactions
+ * @param {Object} interaction - Button interaction
+ * @param {string} customId - Custom ID prefix
+ * @param {Object} category - Category object
+ * @param {string} action - Action ID
+ * @param {string} guildId - Guild ID
+ */
+async function handleActionButton(interaction, customId, category, action, guildId) {
+  const { getDatabase, saveDatabase } = await import("../utils/database.js")
+  
+  try {
+    const db = getDatabase(guildId)
+    const userId = interaction.user.id
+    
+    // Initialize user data if needed
+    if (!db.users[userId]) {
+      db.users[userId] = {
+        totalDonated: 0,
+        entries: {},
+        donations: [],
+        achievements: [],
+        privacyEnabled: false,
+        wins: 0,
+        streak: { current: 0, longest: 0 }
+      }
+    }
+    
+    if (category.id === 'privacy') {
+      if (action === 'toggle_privacy') {
+        db.users[userId].privacyEnabled = !db.users[userId].privacyEnabled
+        saveDatabase(guildId, db)
+        
+        await interaction.followUp({
+          content: `✅ Privacy settings ${db.users[userId].privacyEnabled ? 'enabled' : 'disabled'}!`,
+          ephemeral: true
+        })
+      }
+    } else if (category.id === 'select_draw') {
+      if (action === 'auto') {
+        delete db.users[userId].selectedDraw
+        saveDatabase(guildId, db)
+        
+        await interaction.followUp({
+          content: "✅ Draw selection set to automatic!",
+          ephemeral: true
+        })
+      } else {
+        // Check if it's a valid draw ID
+        if (db.donationDraws[action] && db.donationDraws[action].active) {
+          db.users[userId].selectedDraw = action
+          saveDatabase(guildId, db)
+          
+          const drawName = db.donationDraws[action].name
+          await interaction.followUp({
+            content: `✅ Selected draw: **${drawName}**!`,
+            ephemeral: true
+          })
+        }
+      }
+    }
+  } catch (error) {
+    logger.error("Error handling action button:", error)
+    await interaction.followUp({
+      content: "❌ An error occurred while processing your request.",
+      ephemeral: true
+    })
+  }
 }

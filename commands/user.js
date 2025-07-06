@@ -2,7 +2,8 @@ import { SlashCommandBuilder, EmbedBuilder, MessageFlags } from "discord.js"
 import { getDatabase } from "../utils/database.js"
 import { logger } from "../utils/logger.js"
 import { CONFIG, ACHIEVEMENTS } from "../config.js"
-import { handleCategoryMenu, createPaginatedEmbeds } from "../utils/pagination.js"
+import { handleCategoryMenu, createPaginatedEmbeds, createActionButtons } from "../utils/pagination.js"
+import { saveDatabase } from "../utils/database.js"
 
 export const data = new SlashCommandBuilder()
   .setName("user")
@@ -310,13 +311,25 @@ async function generatePrivacySettings(db, user, guild) {
       }
     )
     .addFields({
-      name: "ℹ️ How to Change",
-      value: "Use `/user privacy setting:SETTING enabled:true/false` to change settings.",
+      name: "ℹ️ Click buttons below to toggle settings",
+      value: "Changes are saved automatically",
       inline: false
     })
     .setFooter({ text: "Powered By Aegisum Eco System" })
 
-  return [embed]
+  // Add action buttons for privacy settings
+  const actions = [
+    {
+      id: "toggle_privacy",
+      label: userData.privacyEnabled ? "Disable Privacy" : "Enable Privacy",
+      style: userData.privacyEnabled ? 4 : 3, // Red if enabled, Green if disabled
+      emoji: userData.privacyEnabled ? "🔓" : "🔒"
+    }
+  ]
+
+  const actionRow = createActionButtons(actions, "user_privacy")
+  
+  return { embeds: [embed], components: [actionRow] }
 }
 
 async function generateDrawSelection(db, user, guild) {
@@ -332,7 +345,7 @@ async function generateDrawSelection(db, user, guild) {
       .setDescription("❌ No active draws available.")
       .setColor("#F44336")
       .setFooter({ text: "Powered By Aegisum Eco System" })
-    return [embed]
+    return { embeds: [embed], components: [] }
   }
 
   const embed = new EmbedBuilder()
@@ -357,7 +370,7 @@ async function generateDrawSelection(db, user, guild) {
 
   const drawsText = activeDraws.map(([drawId, draw]) => {
     const selected = selectedDraw === drawId ? "🎯" : "⚪"
-    return `${selected} **${draw.name}** (ID: \`${drawId}\`)\n💰 Min: $${draw.minAmount} | 🏆 Reward: ${draw.reward}`
+    return `${selected} **${draw.name}**\n💰 Min: $${draw.minAmount} | 🏆 Reward: ${draw.reward}`
   }).join("\n\n")
 
   embed.addFields({
@@ -367,12 +380,34 @@ async function generateDrawSelection(db, user, guild) {
   })
 
   embed.addFields({
-    name: "ℹ️ How to Change",
-    value: "Use `/user select_draw draw_id:DRAW_ID` to select a specific draw.\nUse `/user select_draw draw_id:auto` for automatic selection.",
+    name: "ℹ️ Click buttons below to select a draw",
+    value: "Changes are saved automatically",
     inline: false
   })
 
   embed.setFooter({ text: "Powered By Aegisum Eco System" })
 
-  return [embed]
+  // Create action buttons for each draw + auto option
+  const actions = [
+    {
+      id: "auto",
+      label: "Automatic",
+      style: !selectedDraw ? 3 : 2, // Green if selected, Gray if not
+      emoji: "🔄"
+    }
+  ]
+
+  // Add buttons for each active draw (limit to 4 to fit in one row)
+  activeDraws.slice(0, 3).forEach(([drawId, draw]) => {
+    actions.push({
+      id: drawId,
+      label: draw.name.substring(0, 20), // Limit label length
+      style: selectedDraw === drawId ? 3 : 2, // Green if selected, Gray if not
+      emoji: selectedDraw === drawId ? "🎯" : "⚪"
+    })
+  })
+
+  const actionRow = createActionButtons(actions, "user_draw")
+  
+  return { embeds: [embed], components: [actionRow] }
 }
