@@ -2,51 +2,52 @@ import { SlashCommandBuilder, EmbedBuilder, MessageFlags } from "discord.js"
 import { getDatabase } from "../utils/database.js"
 import { logger } from "../utils/logger.js"
 import { ACHIEVEMENTS, DEFAULT_THEME } from "../config.js"
+import { handleCategoryMenu, createPaginatedEmbeds, handlePagination } from "../utils/pagination.js"
 
 export const data = new SlashCommandBuilder()
   .setName("achievements")
-  .setDescription("View and manage achievements")
-  .addSubcommand(subcommand =>
-    subcommand
-      .setName("list")
-      .setDescription("View all available achievements")
-  )
-  .addSubcommand(subcommand =>
-    subcommand
-      .setName("view")
-      .setDescription("View your achievements")
-      .addUserOption(option =>
-        option.setName("target").setDescription("User to view achievements for").setRequired(false)
-      )
-  )
-  .addSubcommand(subcommand =>
-    subcommand
-      .setName("progress")
-      .setDescription("View your achievement progress")
+  .setDescription("View achievements and progress")
+  .addUserOption(option =>
+    option.setName("target").setDescription("User to view achievements for").setRequired(false)
   )
 
 export async function execute(interaction) {
   try {
     const serverId = interaction.guildId
     const db = getDatabase(serverId)
-    const subcommand = interaction.options.getSubcommand()
+    const targetUser = interaction.options.getUser("target") || interaction.user
 
-    switch (subcommand) {
-      case "list":
-        await handleListAchievements(interaction, db)
-        break
-      case "view":
-        await handleViewAchievements(interaction, db)
-        break
-      case "progress":
-        await handleProgress(interaction, db)
-        break
-      default:
-        await interaction.reply({
-          content: "❌ Unknown subcommand.",
-          flags: MessageFlags.Ephemeral,
-        })
+    // Create achievement menu
+    const menuData = {
+      title: "🏆 Achievement System",
+      description: "View available achievements, your progress, and earned achievements!",
+      color: DEFAULT_THEME?.accent || "#FF9800",
+      categories: [
+        {
+          id: "list",
+          name: "Available",
+          emoji: "📋",
+          description: "View all available achievements",
+          generatePages: async () => await generateAchievementList(db)
+        },
+        {
+          id: "progress",
+          name: "Progress",
+          emoji: "📊",
+          description: "View your achievement progress",
+          generatePages: async () => await generateProgressPages(db, interaction.user.id)
+        },
+        {
+          id: "earned",
+          name: "Earned",
+          emoji: "🏆",
+          description: `View ${targetUser.id === interaction.user.id ? 'your' : targetUser.username + "'s"} earned achievements`,
+          generatePages: async () => await generateEarnedPages(db, targetUser)
+        }
+      ]
     }
+
+    await handleCategoryMenu(interaction, menuData, "achievements")
   } catch (error) {
     logger.error("Error in achievements command:", error)
     
@@ -67,88 +68,100 @@ export async function execute(interaction) {
   }
 }
 
-async function handleListAchievements(interaction, db) {
-  logger.debug("DEFAULT_THEME:", DEFAULT_THEME)
-  logger.debug("ACHIEVEMENTS:", ACHIEVEMENTS)
+async function generateAchievementList(db) {
+  const achievementData = Object.entries(ACHIEVEMENTS).map(([id, achievement]) => ({
+    id,
+    ...achievement
+  }))
 
-  const embed = new EmbedBuilder()
-    .setTitle("🏆 Available Achievements")
-    .setDescription("Complete these challenges to earn achievements!")
-    .setColor(DEFAULT_THEME?.info || "#00BCD4")
-
-  for (const [id, achievement] of Object.entries(ACHIEVEMENTS)) {
-    embed.addFields({
+  const pages = createPaginatedEmbeds(
+    achievementData,
+    6, // 6 achievements per page
+    (achievement) => ({
       name: `${achievement.icon} ${achievement.name}`,
       value: achievement.description,
-      inline: true,
-    })
-  }
+      inline: true
+    }),
+    {
+      title: "🏆 Available Achievements",
+      description: "Complete these challenges to earn achievements!",
+      color: DEFAULT_THEME?.info || "#00BCD4",
+      useFields: true,
+      footerText: "Powered By Aegisum Eco System"
+    }
+  )
 
-  embed.setFooter({ text: "Powered By Aegisum Eco System" })
-  await interaction.reply({ embeds: [embed] })
+  return pages
 }
 
-async function handleViewAchievements(interaction, db) {
-  const targetUser = interaction.options.getUser("target") || interaction.user
-  const userId = targetUser.id
-  const userData = db.users?.[userId]
-
+async function generateEarnedPages(db, targetUser) {
+  const userData = db.users?.[targetUser.id]
+  
   if (!userData) {
-    return interaction.reply({
-      content: "❌ This user has no donation history yet.",
-      flags: MessageFlags.Ephemeral,
-    })
+    const embed = new EmbedBuilder()
+      .setTitle(`🏆 ${targetUser.username}'s Achievements`)
+      .setDescription("❌ This user has no donation history yet.")
+      .setColor(DEFAULT_THEME?.error || "#F44336")
+      .setFooter({ text: "Powered By Aegisum Eco System" })
+    return [embed]
   }
 
   const userAchievements = userData.achievements || []
   const totalAchievements = Object.keys(ACHIEVEMENTS).length
 
-  const embed = new EmbedBuilder()
-    .setTitle(`🏆 ${targetUser.username}'s Achievements`)
-    .setDescription(`${userAchievements.length} of ${totalAchievements} achievements earned`)
-    .setColor(DEFAULT_THEME?.accent || "#FF9800")
-    .setThumbnail(targetUser.displayAvatarURL())
-
   if (userAchievements.length === 0) {
-    embed.addFields({
-      name: "No Achievements Yet",
-      value: "Make donations to earn achievements!",
-      inline: false,
-    })
-  } else {
-    for (const achievementId of userAchievements) {
-      const achievement = ACHIEVEMENTS[achievementId]
-      if (achievement) {
-        embed.addFields({
-          name: `${achievement.icon} ${achievement.name}`,
-          value: achievement.description,
-          inline: true,
-        })
-      }
-    }
+    const embed = new EmbedBuilder()
+      .setTitle(`🏆 ${targetUser.username}'s Achievements`)
+      .setDescription(`0 of ${totalAchievements} achievements earned`)
+      .setColor(DEFAULT_THEME?.warning || "#FFC107")
+      .setThumbnail(targetUser.displayAvatarURL())
+      .addFields({
+        name: "No Achievements Yet",
+        value: "Make donations to earn achievements!",
+        inline: false
+      })
+      .setFooter({ text: "Powered By Aegisum Eco System" })
+    return [embed]
   }
 
-  embed.setFooter({ text: "Powered By Aegisum Eco System" })
-  await interaction.reply({ embeds: [embed] })
+  const earnedAchievements = userAchievements
+    .map(id => ACHIEVEMENTS[id])
+    .filter(achievement => achievement)
+
+  const pages = createPaginatedEmbeds(
+    earnedAchievements,
+    6, // 6 achievements per page
+    (achievement) => ({
+      name: `${achievement.icon} ${achievement.name}`,
+      value: achievement.description,
+      inline: true
+    }),
+    {
+      title: `🏆 ${targetUser.username}'s Achievements`,
+      description: `${userAchievements.length} of ${totalAchievements} achievements earned`,
+      color: DEFAULT_THEME?.accent || "#FF9800",
+      thumbnail: targetUser.displayAvatarURL(),
+      useFields: true,
+      footerText: "Powered By Aegisum Eco System"
+    }
+  )
+
+  return pages
 }
 
-async function handleProgress(interaction, db) {
-  const userId = interaction.user.id
+async function generateProgressPages(db, userId) {
   const userData = db.users?.[userId]
 
   if (!userData) {
-    return interaction.reply({
-      content: "❌ You have no donation history yet. Make a donation to get started!",
-      flags: MessageFlags.Ephemeral,
-    })
+    const embed = new EmbedBuilder()
+      .setTitle("📊 Achievement Progress")
+      .setDescription("❌ You have no donation history yet. Make a donation to get started!")
+      .setColor(DEFAULT_THEME?.error || "#F44336")
+      .setFooter({ text: "Powered By Aegisum Eco System" })
+    return [embed]
   }
 
-  const embed = new EmbedBuilder()
-    .setTitle("📊 Achievement Progress")
-    .setDescription("Your progress towards earning achievements")
-    .setColor(DEFAULT_THEME?.accent || "#FF9800")
-
-  for (const [id, achievement] of Object.entries(ACHIEVEMENTS)) {
+  const progressData = Object.entries(ACHIEVEMENTS).map(([id, achievement]) => {
     const hasAchievement = userData.achievements?.includes(id)
     const status = hasAchievement ? "✅" : "❌"
     
@@ -162,20 +175,36 @@ async function handleProgress(interaction, db) {
       } else if (id === "whale") {
         progress = ` ($${userData.totalDonated.toFixed(2)}/$1000)`
       } else if (id === "streak_master") {
-        progress = ` (${userData.streaks?.longest || 0}/7 days)`
+        progress = ` (${userData.streak?.longest || 0}/7 days)`
       } else if (id === "community_pillar") {
         const referrals = userData.referrals?.referred?.length || 0
         progress = ` (${referrals}/3 referrals)`
       }
     }
 
-    embed.addFields({
-      name: `${status} ${achievement.icon} ${achievement.name}`,
-      value: `${achievement.description}${progress}`,
-      inline: true,
-    })
-  }
+    return {
+      status,
+      achievement,
+      progress
+    }
+  })
 
-  embed.setFooter({ text: "Powered By Aegisum Eco System" })
-  await interaction.reply({ embeds: [embed] })
+  const pages = createPaginatedEmbeds(
+    progressData,
+    6, // 6 achievements per page
+    (item) => ({
+      name: `${item.status} ${item.achievement.icon} ${item.achievement.name}`,
+      value: `${item.achievement.description}${item.progress}`,
+      inline: true
+    }),
+    {
+      title: "📊 Achievement Progress",
+      description: "Your progress towards earning achievements",
+      color: DEFAULT_THEME?.accent || "#FF9800",
+      useFields: true,
+      footerText: "Powered By Aegisum Eco System"
+    }
+  )
+
+  return pages
 }

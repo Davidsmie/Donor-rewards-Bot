@@ -22,8 +22,10 @@ async function handleTipccDonation(message) {
 
     const db = getDatabase(serverId)
 
-    // Parse tip.cc message - Updated regex to handle animated emojis
-    const tipRegex = /<(?:a?):(\w+):\d+>|💰\s*<@!?(\d+)>\s*sent\s*<@!?(\d+)>\s*(?:\*\*)?(\d+(?:\.\d+)?)\s*(\w+)(?:\*\*)?(?:\s*\(≈\s*\$(\d+(?:\.\d+)?)\))?/i
+    // Parse tip.cc message - Updated regex to handle multiple formats
+    // Format 1: 💰 <@!senderID> sent <@!recipientID> **amount SYMBOL** (≈ $usdValue)
+    // Format 2: <emoji> <@!senderID> sent <@!recipientID> amount SYMBOL (≈ $usdValue)
+    const tipRegex = /(?:<a?:\w+:\d+>|💰|🪙)\s*<@!?(\d+)>\s*sent\s*<@!?(\d+)>\s*(?:\*\*)?(\d+(?:\.\d+)?)\s*(\w+)(?:\*\*)?(?:\s*\(≈?\s*\$(\d+(?:\.\d+)?)\))?/i
     
     logger.info(`🔍 Processing tip.cc message: "${message.content}"`)
     
@@ -35,7 +37,7 @@ async function handleTipccDonation(message) {
 
     // Extract data from the match
     // Format: <emoji> <@!senderID> sent <@!recipientID> amount SYMBOL (≈ $usdValue)
-    const [, , senderId, recipientId, amount, currency, extractedUsdValue] = match
+    const [, senderId, recipientId, amount, currency, extractedUsdValue] = match
     
     if (!senderId || !recipientId || !amount || !currency) {
       logger.info(`🔍 Incomplete tip data in message: "${message.content}"`)
@@ -87,6 +89,13 @@ async function handleTipccDonation(message) {
 
     if (!senderMember) {
       logger.info(`🔍 Could not find sender with ID ${senderId}`)
+      return
+    }
+    
+    // Check if sender is blacklisted
+    const isBlacklisted = db.config?.globalBlacklist?.users?.some(entry => entry.id === senderMember.user.id)
+    if (isBlacklisted) {
+      logger.info(`🔍 Sender ${senderMember.user.id} is blacklisted, ignoring donation`)
       return
     }
     
@@ -231,43 +240,49 @@ async function checkAndAssignAchievements(db, userId) {
     const user = db.users[userId]
     if (!user) return
     
-    // Define achievements
+    // Define achievements with minimum donation requirements
     const achievements = [
       {
         id: "first_steps",
         name: "First Steps",
         description: "Made your first donation",
-        check: (user) => user.donations.length > 0,
+        minDonation: 0.01, // Minimum $0.01 to prevent spam
+        check: (user) => user.donations.length > 0 && user.totalDonated >= 0.01,
       },
       {
         id: "generous_donor",
         name: "Generous Donor",
         description: "Donated at least $100",
+        minDonation: 100,
         check: (user) => user.totalDonated >= 100,
       },
       {
         id: "big_spender",
         name: "Big Spender",
         description: "Donated at least $500",
+        minDonation: 500,
         check: (user) => user.totalDonated >= 500,
       },
       {
         id: "whale",
         name: "Whale",
         description: "Donated at least $1,000",
+        minDonation: 1000,
         check: (user) => user.totalDonated >= 1000,
       },
       {
         id: "lucky_winner",
         name: "Lucky Winner",
         description: "Won a donation draw",
-        check: (user) => user.wins > 0,
+        minDonation: 0.01, // Must have donated at least once
+        check: (user) => user.wins > 0 && user.totalDonated >= 0.01,
       },
       {
         id: "streak_master",
         name: "Streak Master",
         description: "Maintained a 7-day donation streak",
-        check: (user) => user.streak?.longest >= 7,
+        minDonation: 0.01, // Must have donated at least once
+        check: (user) => user.streak?.longest >= 7 && user.totalDonated >= 0.01,
       }
     ]
     
@@ -278,6 +293,9 @@ async function checkAndAssignAchievements(db, userId) {
     for (const achievement of achievements) {
       // Skip if already earned
       if (user.achievements.includes(achievement.id)) continue
+      
+      // Check minimum donation requirement first
+      if (user.totalDonated < achievement.minDonation) continue
       
       // Check if achievement should be awarded
       if (achievement.check(user)) {
@@ -301,11 +319,21 @@ async function getCryptoPrice(symbol, amount) {
       if (aegsPrice) return aegsPrice
     }
     
+    // Try CoinPaprika API first for SHIC
+    if (normalizedSymbol === 'SHIC') {
+      const paprikaPrice = await getCoinPaprikaPrice(normalizedSymbol, amount)
+      if (paprikaPrice) return paprikaPrice
+    }
+    
     // Try CoinGecko API
     const geckoPrice = await getCoinGeckoPrice(normalizedSymbol, amount)
     if (geckoPrice) return geckoPrice
     
-    // Try CoinMarketCap API as fallback
+    // Try CoinPaprika API as fallback
+    const paprikaPrice = await getCoinPaprikaPrice(normalizedSymbol, amount)
+    if (paprikaPrice) return paprikaPrice
+    
+    // Try CoinMarketCap API as last resort
     const cmcPrice = await getCoinMarketCapPrice(normalizedSymbol, amount)
     if (cmcPrice) return cmcPrice
     
@@ -382,6 +410,36 @@ async function getCoinGeckoPrice(symbol, amount) {
     return null
   } catch (error) {
     logger.error(`Error fetching CoinGecko price for ${symbol}:`, error)
+    return null
+  }
+}
+
+async function getCoinPaprikaPrice(symbol, amount) {
+  try {
+    const normalizedSymbol = symbol.toUpperCase()
+    
+    // Direct API call for SHIC
+    if (normalizedSymbol === 'SHIC') {
+      const response = await fetch('https://api.coinpaprika.com/v1/tickers/shic-shibacoin')
+      
+      if (!response.ok) {
+        logger.warn(`CoinPaprika API returned status ${response.status} for ${symbol}`)
+        return null
+      }
+      
+      const data = await response.json()
+      
+      if (data && data.quotes && data.quotes.USD && data.quotes.USD.price) {
+        const price = data.quotes.USD.price
+        const totalValue = price * amount
+        logger.info(`🔍 CoinPaprika price for ${symbol}: $${price.toFixed(8)} (Total: $${totalValue.toFixed(4)})`)
+        return totalValue
+      }
+    }
+    
+    return null
+  } catch (error) {
+    logger.error(`Error fetching CoinPaprika price for ${symbol}:`, error)
     return null
   }
 }

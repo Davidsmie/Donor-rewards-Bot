@@ -1,50 +1,67 @@
 import { SlashCommandBuilder, EmbedBuilder, MessageFlags } from "discord.js"
 import { getDatabase } from "../utils/database.js"
 import { logger } from "../utils/logger.js"
+import { handleCategoryMenu, createPaginatedEmbeds, handlePagination } from "../utils/pagination.js"
 
 export const data = new SlashCommandBuilder()
   .setName("draws")
-  .setDescription("Draw management and information commands")
-  .addSubcommand((subcommand) => subcommand.setName("list").setDescription("Show available donation draws"))
-  .addSubcommand((subcommand) =>
-    subcommand
-      .setName("info")
-      .setDescription("Get detailed information about a specific draw")
-      .addStringOption((option) => option.setName("draw_id").setDescription("ID of the draw").setRequired(true)),
+  .setDescription("View draws, leaderboards, and information")
+  .addStringOption((option) => 
+    option.setName("draw_id").setDescription("Specific draw ID to view info for").setRequired(false)
   )
-  .addSubcommand((subcommand) =>
-    subcommand
-      .setName("leaderboard")
-      .setDescription("View entry leaderboard for a specific draw")
-      .addStringOption((option) => option.setName("draw_id").setDescription("ID of the draw").setRequired(true)),
-  )
-  .addSubcommand((subcommand) => subcommand.setName("ids").setDescription("Show all draw IDs for easy reference"))
 
 export async function execute(interaction) {
   try {
     const serverId = interaction.guildId
     const db = getDatabase(serverId)
-    const subcommand = interaction.options.getSubcommand()
+    const drawId = interaction.options.getString("draw_id")
 
-    logger.info(`Draws command executed: ${subcommand} by ${interaction.user.tag}`)
+    logger.info(`Draws command executed by ${interaction.user.tag}`)
 
-    switch (subcommand) {
-      case "list":
-        await handleList(interaction, db)
-        break
-      case "info":
-        await handleInfo(interaction, db)
-        break
-      case "leaderboard":
-        await handleLeaderboard(interaction, db)
-        break
-      case "ids":
-        await handleIds(interaction, db)
-        break
-      default:
-        await handleList(interaction, db)
-        break
+    // If specific draw ID provided, show info for that draw
+    if (drawId) {
+      await handleSpecificDrawInfo(interaction, db, drawId)
+      return
     }
+
+    // Create draws menu
+    const menuData = {
+      title: "🎁 Draw System",
+      description: "View active draws, leaderboards, and draw information!",
+      color: "#4CAF50",
+      categories: [
+        {
+          id: "active",
+          name: "Active Draws",
+          emoji: "🎁",
+          description: "View all active donation draws",
+          generatePages: async () => await generateActiveDrawsPages(db)
+        },
+        {
+          id: "leaderboards",
+          name: "Leaderboards",
+          emoji: "🏆",
+          description: "View entry leaderboards for all draws",
+          generatePages: async () => await generateLeaderboardPages(db, interaction.guild)
+        },
+        {
+          id: "inactive",
+          name: "Completed",
+          emoji: "✅",
+          description: "View completed/inactive draws",
+          generatePages: async () => await generateInactiveDrawsPages(db)
+        },
+        {
+          id: "ids",
+          name: "Draw IDs",
+          emoji: "🆔",
+          description: "Quick reference for all draw IDs",
+          generatePages: async () => await generateDrawIdsPages(db)
+        }
+      ]
+    }
+
+    await handleCategoryMenu(interaction, menuData, "draws")
   } catch (error) {
     logger.error("Error in draws command:", error)
 
@@ -65,40 +82,30 @@ export async function execute(interaction) {
   }
 }
 
-async function handleList(interaction, db) {
+async function generateActiveDrawsPages(db) {
   const activeDraws = Object.entries(db.donationDraws || {})
     .filter(([_, draw]) => draw.active)
     .sort((a, b) => a[1].minAmount - b[1].minAmount)
 
   if (activeDraws.length === 0) {
-    return interaction.reply({
-      content: "❌ There are no active draws at the moment.",
-      flags: MessageFlags.Ephemeral,
-    })
+    const embed = new EmbedBuilder()
+      .setTitle("🎁 Active Draws")
+      .setDescription("❌ There are no active draws at the moment.")
+      .setColor("#F44336")
+      .setFooter({ text: "Powered By Aegisum Eco System" })
+    return [embed]
   }
 
-  const embeds = []
-  const maxFieldsPerEmbed = 3
-
-  for (let i = 0; i < activeDraws.length; i += maxFieldsPerEmbed) {
-    const embed = new EmbedBuilder()
-      .setColor(db.config?.theme?.primary || "#4CAF50")
-      .setFooter({ text: "Powered By Aegisum Eco System" })
-
-    if (i === 0) {
-      embed.setTitle("🎁 Available Donation Draws").setDescription("Here are all the active donation draws:")
-    }
-
-    const drawsSlice = activeDraws.slice(i, i + maxFieldsPerEmbed)
-
-    for (const [drawId, draw] of drawsSlice) {
+  const pages = createPaginatedEmbeds(
+    activeDraws,
+    3, // 3 draws per page
+    ([drawId, draw]) => {
       const currentEntries = Object.values(draw.entries || {}).reduce((sum, count) => sum + count, 0)
       const maxAmount = draw.maxAmount >= 1000000 ? "No limit" : `$${draw.maxAmount}`
 
       let statusIcons = ""
       if (draw.manualEntriesOnly) statusIcons += "🔒 "
       if (draw.vipOnly) statusIcons += "⭐ "
-      if (draw.drawTime) statusIcons += "⏰ "
 
       const fieldValue = [
         `💰 **Range:** $${draw.minAmount} - ${maxAmount}`,
@@ -110,37 +117,30 @@ async function handleList(interaction, db) {
         .filter(Boolean)
         .join("\n")
 
-      embed.addFields({
+      return {
         name: `${draw.name} (ID: \`${drawId}\`)`,
         value: fieldValue,
-        inline: false,
-      })
+        inline: false
+      }
+    },
+    {
+      title: "🎁 Active Donation Draws",
+      description: "Here are all the active donation draws:\n\n💡 Use `/donate` for instructions on how to enter these draws!",
+      color: "#4CAF50",
+      useFields: true,
+      footerText: "Powered By Aegisum Eco System"
     }
+  )
 
-    embeds.push(embed)
-  }
-
-  // Add instruction embed
-  const instructionEmbed = new EmbedBuilder()
-    .setColor("#2196F3")
-    .setTitle("💡 How to Enter")
-    .setDescription("Use `/donate` for instructions on how to enter these draws!")
-    .addFields(
-      { name: "🎯 Specific Draw", value: "Use `/donate draw_id:drawID` for specific instructions", inline: true },
-      { name: "🆔 Draw IDs", value: "Use `/draws ids` to see all available IDs", inline: true },
-    )
-
-  embeds.push(instructionEmbed)
-  await interaction.reply({ embeds })
+  return pages
 }
 
-async function handleInfo(interaction, db) {
-  const drawId = interaction.options.getString("draw_id")
+async function handleSpecificDrawInfo(interaction, db, drawId) {
   const draw = db.donationDraws?.[drawId]
 
   if (!draw) {
     return interaction.reply({
-      content: "❌ Draw not found. Use `/draws ids` to see available draws.",
+      content: "❌ Draw not found. Use `/draws` to see available draws.",
       flags: MessageFlags.Ephemeral,
     })
   }
@@ -151,7 +151,7 @@ async function handleInfo(interaction, db) {
   const embed = new EmbedBuilder()
     .setTitle(`🎁 ${draw.name}`)
     .setDescription(`Detailed information about draw: **\`${drawId}\`**`)
-    .setColor(draw.active ? db.config?.theme?.primary || "#4CAF50" : db.config?.theme?.error || "#F44336")
+    .setColor(draw.active ? "#4CAF50" : "#F44336")
     .addFields(
       { name: "🆔 Draw ID", value: `\`${drawId}\``, inline: true },
       { name: "📊 Status", value: draw.active ? "🟢 Active" : "🔴 Inactive", inline: true },
@@ -184,71 +184,138 @@ async function handleInfo(interaction, db) {
   await interaction.reply({ embeds: [embed] })
 }
 
-async function handleLeaderboard(interaction, db) {
-  const drawId = interaction.options.getString("draw_id")
-  const draw = db.donationDraws?.[drawId]
+async function generateLeaderboardPages(db, guild) {
+  const draws = Object.entries(db.donationDraws || {})
+    .filter(([_, draw]) => draw.active)
 
-  if (!draw) {
-    return interaction.reply({
-      content: "❌ Draw not found.",
-      flags: MessageFlags.Ephemeral,
-    })
+  if (draws.length === 0) {
+    const embed = new EmbedBuilder()
+      .setTitle("🏆 Draw Leaderboards")
+      .setDescription("❌ No active draws found.")
+      .setColor("#F44336")
+      .setFooter({ text: "Powered By Aegisum Eco System" })
+    return [embed]
   }
 
-  const entries = draw.entries || {}
-  const sortedEntries = Object.entries(entries)
-    .filter(([userId]) => !db.users?.[userId]?.privacyEnabled)
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, 10)
+  const pages = []
 
-  if (sortedEntries.length === 0) {
-    return interaction.reply({
-      content: "📊 No public entries found for this draw.",
-      flags: MessageFlags.Ephemeral,
+  for (const [drawId, draw] of draws) {
+    const entries = draw.entries || {}
+    const sortedEntries = Object.entries(entries)
+      .filter(([userId]) => !db.users?.[userId]?.privacyEnabled)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 15) // Top 15 per draw
+
+    if (sortedEntries.length === 0) {
+      continue // Skip draws with no public entries
+    }
+
+    const totalEntries = Object.values(entries).reduce((sum, count) => sum + count, 0)
+
+    const embed = new EmbedBuilder()
+      .setTitle(`🎟️ ${draw.name} Leaderboard`)
+      .setDescription(`Total entries: ${totalEntries}/${draw.maxEntries}`)
+      .setColor("#4CAF50")
+
+    const leaderboardText = sortedEntries
+      .map(([userId, entryCount], index) => {
+        const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `${index + 1}.`
+        const percentage = ((entryCount / totalEntries) * 100).toFixed(1)
+        return `${medal} <@${userId}> - ${entryCount} entries (${percentage}%)`
+      })
+      .join("\n")
+
+    embed.addFields({
+      name: "📊 Top Entries",
+      value: leaderboardText,
+      inline: false,
     })
-  }
 
-  const totalEntries = Object.values(entries).reduce((sum, count) => sum + count, 0)
-
-  const embed = new EmbedBuilder()
-    .setTitle(`🎟️ Entry Leaderboard: ${draw.name}`)
-    .setColor(db.config?.theme?.primary || "#4CAF50")
-    .setDescription(`Total entries: ${totalEntries}/${draw.maxEntries}`)
-
-  const leaderboardText = sortedEntries
-    .map(([userId, entryCount], index) => {
-      const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `${index + 1}.`
-      const percentage = ((entryCount / totalEntries) * 100).toFixed(1)
-      return `${medal} <@${userId}> - ${entryCount} entries (${percentage}%)`
-    })
-    .join("\n")
-
-  embed.addFields({
-    name: "📊 Top Entries",
-    value: leaderboardText,
-    inline: false,
-  })
-
-  embed
-    .addFields(
+    embed.addFields(
       { name: "🏆 Reward", value: draw.reward, inline: true },
-      { name: "💰 Range", value: `$${draw.minAmount} - $${draw.maxAmount}`, inline: true },
+      { name: "💰 Range", value: `$${draw.minAmount} - $${draw.maxAmount >= 1000000 ? "No limit" : "$" + draw.maxAmount}`, inline: true },
       { name: "📊 Status", value: draw.active ? "🟢 Active" : "🔴 Inactive", inline: true },
     )
-    .setFooter({ text: "Powered By Aegisum Eco System" })
-    .setTimestamp()
 
-  await interaction.reply({ embeds: [embed] })
+    embed.setFooter({ text: "Powered By Aegisum Eco System" })
+    pages.push(embed)
+  }
+
+  if (pages.length === 0) {
+    const embed = new EmbedBuilder()
+      .setTitle("🏆 Draw Leaderboards")
+      .setDescription("❌ No public entries found for any active draws.")
+      .setColor("#F44336")
+      .setFooter({ text: "Powered By Aegisum Eco System" })
+    return [embed]
+  }
+
+  return pages
 }
 
-async function handleIds(interaction, db) {
+async function generateInactiveDrawsPages(db) {
+  const inactiveDraws = Object.entries(db.donationDraws || {})
+    .filter(([_, draw]) => !draw.active)
+    .sort((a, b) => (b[1].winnerSelectedAt || b[1].createdAt || 0) - (a[1].winnerSelectedAt || a[1].createdAt || 0))
+
+  if (inactiveDraws.length === 0) {
+    const embed = new EmbedBuilder()
+      .setTitle("✅ Completed Draws")
+      .setDescription("❌ No completed draws found.")
+      .setColor("#F44336")
+      .setFooter({ text: "Powered By Aegisum Eco System" })
+    return [embed]
+  }
+
+  const pages = createPaginatedEmbeds(
+    inactiveDraws,
+    5, // 5 draws per page
+    ([drawId, draw]) => {
+      const currentEntries = Object.values(draw.entries || {}).reduce((sum, count) => sum + count, 0)
+      const maxAmount = draw.maxAmount >= 1000000 ? "No limit" : `$${draw.maxAmount}`
+
+      let fieldValue = [
+        `💰 **Range:** $${draw.minAmount} - ${maxAmount}`,
+        `🎟️ **Entries:** ${currentEntries}/${draw.maxEntries}`,
+        `🏆 **Reward:** ${draw.reward}`,
+      ]
+
+      if (draw.winner) {
+        fieldValue.push(`👑 **Winner:** <@${draw.winner}>`)
+      }
+
+      if (draw.winnerSelectedAt) {
+        fieldValue.push(`📅 **Completed:** ${new Date(draw.winnerSelectedAt).toLocaleDateString()}`)
+      }
+
+      return {
+        name: `${draw.name} (ID: \`${drawId}\`)`,
+        value: fieldValue.join("\n"),
+        inline: false
+      }
+    },
+    {
+      title: "✅ Completed Draws",
+      description: "Here are the completed/inactive draws:",
+      color: "#9E9E9E",
+      useFields: true,
+      footerText: "Powered By Aegisum Eco System"
+    }
+  )
+
+  return pages
+}
+
+async function generateDrawIdsPages(db) {
   const draws = Object.entries(db.donationDraws || {})
 
   if (draws.length === 0) {
-    return interaction.reply({
-      content: "❌ No draws have been created yet.",
-      flags: MessageFlags.Ephemeral,
-    })
+    const embed = new EmbedBuilder()
+      .setTitle("🆔 Draw IDs Reference")
+      .setDescription("❌ No draws have been created yet.")
+      .setColor("#F44336")
+      .setFooter({ text: "Powered By Aegisum Eco System" })
+    return [embed]
   }
 
   const activeDraws = draws.filter(([, draw]) => draw.active)
@@ -257,10 +324,12 @@ async function handleIds(interaction, db) {
   const embed = new EmbedBuilder()
     .setTitle("🆔 Draw IDs Reference")
     .setDescription("Quick reference for all draw IDs:")
-    .setColor(db.config?.theme?.info || "#00BCD4")
+    .setColor("#00BCD4")
 
   if (activeDraws.length > 0) {
-    const activeList = activeDraws.map(([drawId, draw]) => `• \`${drawId}\` - ${draw.name}`).join("\n")
+    const activeList = activeDraws
+      .map(([drawId, draw]) => `• \`${drawId}\` - ${draw.name}`)
+      .join("\n")
 
     embed.addFields({
       name: "🟢 Active Draws",
@@ -290,17 +359,16 @@ async function handleIds(interaction, db) {
     }
   }
 
-  embed
-    .addFields({
-      name: "💡 Usage",
-      value: [
-        "• Copy the draw ID (including backticks)",
-        "• Use with `/draws info draw_id:DRAW_ID`",
-        "• Use with `/donate draw_id:DRAW_ID`",
-      ].join("\n"),
-      inline: false,
-    })
-    .setFooter({ text: "Powered By Aegisum Eco System" })
+  embed.addFields({
+    name: "💡 Usage",
+    value: [
+      "• Copy the draw ID (including backticks)",
+      "• Use with `/draws draw_id:DRAW_ID` for specific info",
+      "• Use with `/donate draw_id:DRAW_ID`",
+    ].join("\n"),
+    inline: false,
+  })
 
-  await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral })
+  embed.setFooter({ text: "Powered By Aegisum Eco System" })
+  return [embed]
 }

@@ -580,6 +580,13 @@ async function handleAssignEntries(interaction, db) {
 
   // Assign entries to each target user
   for (const targetUser of targetUsers) {
+    // Check if user is blacklisted
+    const isBlacklisted = db.config?.globalBlacklist?.users?.some(entry => entry.id === targetUser.id)
+    if (isBlacklisted) {
+      logger.info(`Skipping blacklisted user ${targetUser.id} (${targetUser.username}) for entry assignment`)
+      continue
+    }
+
     // Initialize user data
     if (!db.users[targetUser.id]) {
       db.users[targetUser.id] = {
