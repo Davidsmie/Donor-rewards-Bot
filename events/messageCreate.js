@@ -6,19 +6,23 @@ import fetch from "node-fetch"
 export const name = Events.MessageCreate
 
 export async function execute(message) {
-  if (message.author.bot) return
-
-  // Check for tip.cc donations - Multiple possible bot IDs
-  const tipccBotIds = [
-    "617037497574359050", // Original tip.cc bot
-    "803569638084313098", // Alternative tip.cc bot ID
-    "617037497574359051", // Another possible ID
-  ]
+  // Check for tip.cc donations BEFORE filtering out bots
+  const tipccBotId = "617037497574359050" // tip.cc#7731
   
-  if (tipccBotIds.includes(message.author.id)) {
-    logger.info(`🔍 Detected tip.cc message from bot ID: ${message.author.id}`)
-    await handleTipccDonation(message)
+  // Log all bot messages for debugging
+  if (message.author.bot) {
+    logger.info(`🤖 Bot message from ${message.author.tag} (ID: ${message.author.id}): "${message.content}"`)
+    
+    if (message.author.id === tipccBotId) {
+      logger.info(`🔍 Detected tip.cc message from bot ID: ${message.author.id}`)
+      logger.info(`🔍 Message content: "${message.content}"`)
+      await handleTipccDonation(message)
+      return
+    }
   }
+  
+  // Filter out other bot messages
+  if (message.author.bot) return
 }
 
 async function handleTipccDonation(message) {
@@ -28,10 +32,10 @@ async function handleTipccDonation(message) {
 
     const db = getDatabase(serverId)
 
-    // Parse tip.cc message - Updated regex to handle multiple formats
-    // Format from image: 💰 @Daimondsteel259 sent @AegisumDonation 100.00 AEGS.
-    // Format with USD: 🪙 @Daimondsteel259 sent @AegisumDonation 0.1000 USDT (≈ $0.10).
-    const tipRegex = /(?:💰|🪙|<a?:\w+:\d+>)\s*<@!?(\d+)>\s*sent\s*<@!?(\d+)>\s*(\d+(?:\.\d+)?)\s*(\w+)\.?(?:\s*\(≈?\s*\$(\d+(?:\.\d+)?)\))?/i
+    // Parse tip.cc message - Exact format from user's image
+    // Format: 💰 @Daimondsteel259 sent @AegisumDonation 100.00 AEGS.
+    // Format: 💰 @Daimondsteel259 sent @AegisumDonation 50.00 AEGS.
+    const tipRegex = /💰\s*<@!?(\d+)>\s*sent\s*<@!?(\d+)>\s*(\d+(?:\.\d+)?)\s*(\w+)\.?/i
     
     logger.info(`🔍 Processing tip.cc message: "${message.content}"`)
     
