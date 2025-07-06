@@ -8,9 +8,15 @@ export const name = Events.MessageCreate
 export async function execute(message) {
   if (message.author.bot) return
 
-  // Check for tip.cc donations
-  if (message.author.id === "617037497574359050") {
-    // tip.cc bot ID
+  // Check for tip.cc donations - Multiple possible bot IDs
+  const tipccBotIds = [
+    "617037497574359050", // Original tip.cc bot
+    "803569638084313098", // Alternative tip.cc bot ID
+    "617037497574359051", // Another possible ID
+  ]
+  
+  if (tipccBotIds.includes(message.author.id)) {
+    logger.info(`🔍 Detected tip.cc message from bot ID: ${message.author.id}`)
     await handleTipccDonation(message)
   }
 }
@@ -23,9 +29,9 @@ async function handleTipccDonation(message) {
     const db = getDatabase(serverId)
 
     // Parse tip.cc message - Updated regex to handle multiple formats
-    // Format 1: 💰 <@!senderID> sent <@!recipientID> **amount SYMBOL** (≈ $usdValue)
-    // Format 2: <emoji> <@!senderID> sent <@!recipientID> amount SYMBOL (≈ $usdValue)
-    const tipRegex = /(?:<a?:\w+:\d+>|💰|🪙)\s*<@!?(\d+)>\s*sent\s*<@!?(\d+)>\s*(?:\*\*)?(\d+(?:\.\d+)?)\s*(\w+)(?:\*\*)?(?:\s*\(≈?\s*\$(\d+(?:\.\d+)?)\))?/i
+    // Format from image: 💰 @Daimondsteel259 sent @AegisumDonation 100.00 AEGS.
+    // Format with USD: 🪙 @Daimondsteel259 sent @AegisumDonation 0.1000 USDT (≈ $0.10).
+    const tipRegex = /(?:💰|🪙|<a?:\w+:\d+>)\s*<@!?(\d+)>\s*sent\s*<@!?(\d+)>\s*(\d+(?:\.\d+)?)\s*(\w+)\.?(?:\s*\(≈?\s*\$(\d+(?:\.\d+)?)\))?/i
     
     logger.info(`🔍 Processing tip.cc message: "${message.content}"`)
     
@@ -202,31 +208,42 @@ async function handleTipccDonation(message) {
     
     logger.info(`✅ Donation processed successfully`)
 
-    // Send confirmation
+    // Send confirmation message (like in the reference image)
     if (entriesAdded > 0) {
-      // Create a more detailed confirmation message
-      let confirmationMessage = `🎉 **Thank you for your donation!** 🎉\n\n`
-      confirmationMessage += `<@${senderMember.user.id}> just donated **$${usdValue.toFixed(2)}** and received **${entriesAdded}** draw entries!\n\n`
-      
-      // Add entries by draw
-      confirmationMessage += `📋 **Entries Added:**\n`
-      for (const [drawId, entries] of Object.entries(entriesByDraw)) {
-        const drawName = db.donationDraws[drawId]?.name || drawId
-        confirmationMessage += `• **${drawName}**: ${entries} entries\n`
-      }
-      
-      // Add total donated
-      confirmationMessage += `\n💰 **Donation Amount:** $${usdValue.toFixed(2)}\n`
-      confirmationMessage += `💵 **Total Donated:** $${db.users[senderMember.user.id].totalDonated.toFixed(2)}\n\n`
-      
-      // Add helpful commands
-      confirmationMessage += `📝 Use \`/user entries\` to see all your entries across draws!\n`
-      confirmationMessage += `🎯 Use \`/user select_draw\` to choose a different draw for your next donation!\n\n`
-      
-      // Add thank you message
-      confirmationMessage += `Thank you for supporting our community! ❤️`
+      try {
+        const { EmbedBuilder } = await import("discord.js")
+        
+        const embed = new EmbedBuilder()
+          .setColor("#4CAF50")
+          .setTitle("🎉 Thank you for your donation! 🎉")
+          .setDescription(`<@${senderMember.user.id}> just donated **$${usdValue.toFixed(2)}** and received **${entriesAdded} draw entries**!`)
+          
+        // Add entries by draw
+        let entriesText = ""
+        for (const [drawId, entries] of Object.entries(entriesByDraw)) {
+          const drawName = db.donationDraws[drawId]?.name || drawId
+          entriesText += `• **${drawName}**: ${entries} entries\n`
+        }
+        
+        embed.addFields(
+          { name: "🎟️ Entries Added:", value: entriesText, inline: false },
+          { name: "💰 Donation Amount:", value: `$${usdValue.toFixed(2)}`, inline: true },
+          { name: "💵 Total Donated:", value: `$${db.users[senderMember.user.id].totalDonated.toFixed(2)}`, inline: true }
+        )
+        
+        embed.addFields(
+          { name: "📝 Commands", value: "📋 Use `/user entries` to see all your entries across draws!\n🎯 Use `/user select_draw` to choose a different draw for your next donation!", inline: false }
+        )
+        
+        embed.setFooter({ text: "Thank you for supporting our community! ❤️" })
+        embed.setTimestamp()
 
-      await message.channel.send(confirmationMessage)
+        await message.channel.send({ embeds: [embed] })
+      } catch (embedError) {
+        // Fallback to simple message if embed fails
+        const simpleMessage = `🎉 **Thank you for your donation!** 🎉\n\n<@${senderMember.user.id}> just donated $${usdValue.toFixed(2)} and received ${entriesAdded} draw entries!\n\nThank you for supporting our community! ❤️`
+        await message.channel.send(simpleMessage)
+      }
     }
 
     logger.info(`Processed donation: ${senderMember.user.id} -> $${usdValue.toFixed(2)} (${entriesAdded} entries)`)
