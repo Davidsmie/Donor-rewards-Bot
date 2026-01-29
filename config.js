@@ -65,12 +65,12 @@ export const CONFIG = {
 
 // Export default achievement definitions
 export const ACHIEVEMENTS = {
-  first_donation: {
-    id: 'first_donation',
+  first_steps: {
+    id: 'first_steps',
     name: 'First Steps',
     description: 'Made your first donation',
     icon: '🌱',
-    requirement: (userData) => userData.totalDonated > 0
+    requirement: (userData) => userData.totalDonated >= 0.01
   },
   generous_donor: {
     id: 'generous_donor',

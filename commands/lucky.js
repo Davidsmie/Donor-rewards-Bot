@@ -1,31 +1,11 @@
 import { SlashCommandBuilder, EmbedBuilder, MessageFlags } from "discord.js"
 import { getDatabase, saveDatabase } from "../utils/database.js"
 import { logger } from "../utils/logger.js"
+import { handleCategoryMenu, createActionButtons } from "../utils/pagination.js"
 
 export const data = new SlashCommandBuilder()
   .setName("lucky")
-  .setDescription("Manage your lucky numbers")
-  .addSubcommand(subcommand =>
-    subcommand
-      .setName("set")
-      .setDescription("Set your lucky numbers")
-      .addStringOption(option =>
-        option
-          .setName("numbers")
-          .setDescription("Your lucky numbers (comma-separated, 1-50)")
-          .setRequired(true)
-      )
-  )
-  .addSubcommand(subcommand =>
-    subcommand
-      .setName("view")
-      .setDescription("View your current lucky numbers")
-  )
-  .addSubcommand(subcommand =>
-    subcommand
-      .setName("clear")
-      .setDescription("Clear your lucky numbers")
-  )
+  .setDescription("Lucky number games and management")
 
 export async function execute(interaction) {
   try {

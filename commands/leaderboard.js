@@ -1,49 +1,69 @@
 import { SlashCommandBuilder, EmbedBuilder, MessageFlags } from "discord.js"
 import { getDatabase } from "../utils/database.js"
 import { logger } from "../utils/logger.js"
+import { handleCategoryMenu, createPaginatedEmbeds } from "../utils/pagination.js"
 
 export const data = new SlashCommandBuilder()
   .setName("leaderboard")
-  .setDescription("View donation leaderboards")
-  .addStringOption(option =>
-    option
-      .setName("type")
-      .setDescription("Type of leaderboard to view")
-      .setRequired(false)
-      .addChoices(
-        { name: "Total Donations", value: "total" },
-        { name: "Monthly Donations", value: "monthly" },
-        { name: "Weekly Donations", value: "weekly" },
-        { name: "Most Entries", value: "entries" },
-        { name: "Achievement Count", value: "achievements" }
-      )
-  )
+  .setDescription("View various leaderboards and rankings")
 
 export async function execute(interaction) {
   try {
     const serverId = interaction.guildId
     const db = getDatabase(serverId)
-    const type = interaction.options.getString("type") || "total"
 
-    switch (type) {
-      case "total":
-        await handleTotalLeaderboard(interaction, db)
-        break
-      case "monthly":
-        await handleMonthlyLeaderboard(interaction, db)
-        break
-      case "weekly":
-        await handleWeeklyLeaderboard(interaction, db)
-        break
-      case "entries":
-        await handleEntriesLeaderboard(interaction, db)
-        break
-      case "achievements":
-        await handleAchievementsLeaderboard(interaction, db)
-        break
-      default:
-        await handleTotalLeaderboard(interaction, db)
+    // Create leaderboard menu
+    const menuData = {
+      title: "🏆 Leaderboard System",
+      description: "View various rankings and leaderboards!",
+      color: "#4CAF50",
+      categories: [
+        {
+          id: "total",
+          name: "Total Donations",
+          emoji: "💰",
+          description: "Top donors of all time",
+          generatePages: async () => await generateTotalLeaderboard(db, interaction.guild)
+        },
+        {
+          id: "monthly",
+          name: "Monthly",
+          emoji: "📅",
+          description: "Top donors this month",
+          generatePages: async () => await generateMonthlyLeaderboard(db, interaction.guild)
+        },
+        {
+          id: "weekly",
+          name: "Weekly",
+          emoji: "📊",
+          description: "Top donors this week",
+          generatePages: async () => await generateWeeklyLeaderboard(db, interaction.guild)
+        },
+        {
+          id: "entries",
+          name: "Draw Entries",
+          emoji: "🎫",
+          description: "Users with most draw entries",
+          generatePages: async () => await generateEntriesLeaderboard(db, interaction.guild)
+        },
+        {
+          id: "achievements",
+          name: "Achievements",
+          emoji: "🏆",
+          description: "Users with most achievements",
+          generatePages: async () => await generateAchievementsLeaderboard(db, interaction.guild)
+        },
+        {
+          id: "streaks",
+          name: "Streaks",
+          emoji: "🔥",
+          description: "Longest donation streaks",
+          generatePages: async () => await generateStreaksLeaderboard(db, interaction.guild)
+        }
+      ]
     }
+
+    await handleCategoryMenu(interaction, menuData, "leaderboard")
   } catch (error) {
     logger.error("Error in leaderboard command:", error)
     
@@ -64,46 +84,40 @@ export async function execute(interaction) {
   }
 }
 
-async function handleTotalLeaderboard(interaction, db) {
+async function generateTotalLeaderboard(db, guild) {
   const users = Object.entries(db.users || {})
-    .filter(([userId, userData]) => userData.totalDonated > 0)
+    .filter(([userId, userData]) => userData.totalDonated > 0 && !userData.privacyEnabled)
     .sort(([, a], [, b]) => b.totalDonated - a.totalDonated)
-    .slice(0, 10)
 
   if (users.length === 0) {
-    return interaction.reply({
-      content: "❌ No donations found yet.",
-      flags: MessageFlags.Ephemeral,
-    })
+    const embed = new EmbedBuilder()
+      .setTitle("🏆 Total Donations Leaderboard")
+      .setDescription("❌ No donations found yet.")
+      .setColor("#F44336")
+      .setFooter({ text: "Powered By Aegisum Eco System" })
+    return [embed]
   }
 
-  const embed = new EmbedBuilder()
-    .setTitle("🏆 Total Donations Leaderboard")
-    .setDescription("Top donors of all time")
-    .setColor(db.config?.theme?.primary || "#4CAF50")
+  const pages = createPaginatedEmbeds(
+    users,
+    15, // 15 users per page
+    ([userId, userData], index) => {
+      const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `${index + 1}.`
+      return `${medal} <@${userId}> - $${userData.totalDonated.toFixed(2)}`
+    },
+    {
+      title: "🏆 Total Donations Leaderboard",
+      description: "Top donors of all time",
+      color: "#4CAF50",
+      useFields: false,
+      footerText: "Powered By Aegisum Eco System"
+    }
+  )
 
-  let leaderboardText = ""
-  for (let i = 0; i < users.length; i++) {
-    const [userId, userData] = users[i]
-    const user = await interaction.guild.members.fetch(userId).catch(() => null)
-    const username = user?.user.username || "Unknown User"
-    const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}.`
-    
-    leaderboardText += `${medal} **${username}** - $${userData.totalDonated.toFixed(2)}\n`
-  }
-
-  embed.addFields({
-    name: "Top Donors",
-    value: leaderboardText,
-    inline: false,
-  })
-
-  embed.setFooter({ text: "Powered By Aegisum Eco System" })
-  await interaction.reply({ embeds: [embed] })
+  return pages
 }
 
-async function handleMonthlyLeaderboard(interaction, db) {
-  const now = Date.now()
+async function generateMonthlyLeaderboard(db, guild) {
   const monthStart = new Date()
   monthStart.setDate(1)
   monthStart.setHours(0, 0, 0, 0)
@@ -117,44 +131,38 @@ async function handleMonthlyLeaderboard(interaction, db) {
       
       return [userId, { ...userData, monthlyTotal }]
     })
-    .filter(([userId, userData]) => userData.monthlyTotal > 0)
+    .filter(([userId, userData]) => userData.monthlyTotal > 0 && !userData.privacyEnabled)
     .sort(([, a], [, b]) => b.monthlyTotal - a.monthlyTotal)
-    .slice(0, 10)
 
   if (users.length === 0) {
-    return interaction.reply({
-      content: "❌ No donations found this month.",
-      flags: MessageFlags.Ephemeral,
-    })
+    const embed = new EmbedBuilder()
+      .setTitle("📅 Monthly Donations Leaderboard")
+      .setDescription("❌ No donations found this month.")
+      .setColor("#F44336")
+      .setFooter({ text: "Powered By Aegisum Eco System" })
+    return [embed]
   }
 
-  const embed = new EmbedBuilder()
-    .setTitle("📅 Monthly Donations Leaderboard")
-    .setDescription(`Top donors for ${monthStart.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`)
-    .setColor(db.config?.theme?.secondary || "#2196F3")
+  const pages = createPaginatedEmbeds(
+    users,
+    15, // 15 users per page
+    ([userId, userData], index) => {
+      const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `${index + 1}.`
+      return `${medal} <@${userId}> - $${userData.monthlyTotal.toFixed(2)}`
+    },
+    {
+      title: "📅 Monthly Donations Leaderboard",
+      description: `Top donors for ${monthStart.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`,
+      color: "#2196F3",
+      useFields: false,
+      footerText: "Powered By Aegisum Eco System"
+    }
+  )
 
-  let leaderboardText = ""
-  for (let i = 0; i < users.length; i++) {
-    const [userId, userData] = users[i]
-    const user = await interaction.guild.members.fetch(userId).catch(() => null)
-    const username = user?.user.username || "Unknown User"
-    const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}.`
-    
-    leaderboardText += `${medal} **${username}** - $${userData.monthlyTotal.toFixed(2)}\n`
-  }
-
-  embed.addFields({
-    name: "Top Monthly Donors",
-    value: leaderboardText,
-    inline: false,
-  })
-
-  embed.setFooter({ text: "Powered By Aegisum Eco System" })
-  await interaction.reply({ embeds: [embed] })
+  return pages
 }
 
-async function handleWeeklyLeaderboard(interaction, db) {
-  const now = Date.now()
+async function generateWeeklyLeaderboard(db, guild) {
   const weekStart = new Date()
   weekStart.setDate(weekStart.getDate() - weekStart.getDay())
   weekStart.setHours(0, 0, 0, 0)
@@ -168,122 +176,145 @@ async function handleWeeklyLeaderboard(interaction, db) {
       
       return [userId, { ...userData, weeklyTotal }]
     })
-    .filter(([userId, userData]) => userData.weeklyTotal > 0)
+    .filter(([userId, userData]) => userData.weeklyTotal > 0 && !userData.privacyEnabled)
     .sort(([, a], [, b]) => b.weeklyTotal - a.weeklyTotal)
-    .slice(0, 10)
 
   if (users.length === 0) {
-    return interaction.reply({
-      content: "❌ No donations found this week.",
-      flags: MessageFlags.Ephemeral,
-    })
+    const embed = new EmbedBuilder()
+      .setTitle("📊 Weekly Donations Leaderboard")
+      .setDescription("❌ No donations found this week.")
+      .setColor("#F44336")
+      .setFooter({ text: "Powered By Aegisum Eco System" })
+    return [embed]
   }
 
-  const embed = new EmbedBuilder()
-    .setTitle("📊 Weekly Donations Leaderboard")
-    .setDescription("Top donors for this week")
-    .setColor(db.config?.theme?.accent || "#FF9800")
+  const pages = createPaginatedEmbeds(
+    users,
+    15, // 15 users per page
+    ([userId, userData], index) => {
+      const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `${index + 1}.`
+      return `${medal} <@${userId}> - $${userData.weeklyTotal.toFixed(2)}`
+    },
+    {
+      title: "📊 Weekly Donations Leaderboard",
+      description: "Top donors for this week",
+      color: "#FF9800",
+      useFields: false,
+      footerText: "Powered By Aegisum Eco System"
+    }
+  )
 
-  let leaderboardText = ""
-  for (let i = 0; i < users.length; i++) {
-    const [userId, userData] = users[i]
-    const user = await interaction.guild.members.fetch(userId).catch(() => null)
-    const username = user?.user.username || "Unknown User"
-    const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}.`
-    
-    leaderboardText += `${medal} **${username}** - $${userData.weeklyTotal.toFixed(2)}\n`
-  }
-
-  embed.addFields({
-    name: "Top Weekly Donors",
-    value: leaderboardText,
-    inline: false,
-  })
-
-  embed.setFooter({ text: "Powered By Aegisum Eco System" })
-  await interaction.reply({ embeds: [embed] })
+  return pages
 }
 
-async function handleEntriesLeaderboard(interaction, db) {
+async function generateEntriesLeaderboard(db, guild) {
   const users = Object.entries(db.users || {})
     .map(([userId, userData]) => {
       const totalEntries = Object.values(userData.entries || {}).reduce((sum, count) => sum + count, 0)
       return [userId, { ...userData, totalEntries }]
     })
-    .filter(([userId, userData]) => userData.totalEntries > 0)
+    .filter(([userId, userData]) => userData.totalEntries > 0 && !userData.privacyEnabled)
     .sort(([, a], [, b]) => b.totalEntries - a.totalEntries)
-    .slice(0, 10)
 
   if (users.length === 0) {
-    return interaction.reply({
-      content: "❌ No entries found yet.",
-      flags: MessageFlags.Ephemeral,
-    })
+    const embed = new EmbedBuilder()
+      .setTitle("🎫 Draw Entries Leaderboard")
+      .setDescription("❌ No entries found yet.")
+      .setColor("#F44336")
+      .setFooter({ text: "Powered By Aegisum Eco System" })
+    return [embed]
   }
 
-  const embed = new EmbedBuilder()
-    .setTitle("🎫 Draw Entries Leaderboard")
-    .setDescription("Users with the most draw entries")
-    .setColor(db.config?.theme?.vip || "#9C27B0")
+  const pages = createPaginatedEmbeds(
+    users,
+    15, // 15 users per page
+    ([userId, userData], index) => {
+      const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `${index + 1}.`
+      return `${medal} <@${userId}> - ${userData.totalEntries} entries`
+    },
+    {
+      title: "🎫 Draw Entries Leaderboard",
+      description: "Users with the most draw entries",
+      color: "#9C27B0",
+      useFields: false,
+      footerText: "Powered By Aegisum Eco System"
+    }
+  )
 
-  let leaderboardText = ""
-  for (let i = 0; i < users.length; i++) {
-    const [userId, userData] = users[i]
-    const user = await interaction.guild.members.fetch(userId).catch(() => null)
-    const username = user?.user.username || "Unknown User"
-    const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}.`
-    
-    leaderboardText += `${medal} **${username}** - ${userData.totalEntries} entries\n`
-  }
-
-  embed.addFields({
-    name: "Most Entries",
-    value: leaderboardText,
-    inline: false,
-  })
-
-  embed.setFooter({ text: "Powered By Aegisum Eco System" })
-  await interaction.reply({ embeds: [embed] })
+  return pages
 }
 
-async function handleAchievementsLeaderboard(interaction, db) {
+async function generateAchievementsLeaderboard(db, guild) {
   const users = Object.entries(db.users || {})
     .map(([userId, userData]) => {
       const achievementCount = (userData.achievements || []).length
       return [userId, { ...userData, achievementCount }]
     })
-    .filter(([userId, userData]) => userData.achievementCount > 0)
+    .filter(([userId, userData]) => userData.achievementCount > 0 && !userData.privacyEnabled)
     .sort(([, a], [, b]) => b.achievementCount - a.achievementCount)
-    .slice(0, 10)
 
   if (users.length === 0) {
-    return interaction.reply({
-      content: "❌ No achievements earned yet.",
-      flags: MessageFlags.Ephemeral,
+    const embed = new EmbedBuilder()
+      .setTitle("🏆 Achievements Leaderboard")
+      .setDescription("❌ No achievements earned yet.")
+      .setColor("#F44336")
+      .setFooter({ text: "Powered By Aegisum Eco System" })
+    return [embed]
+  }
+
+  const pages = createPaginatedEmbeds(
+    users,
+    15, // 15 users per page
+    ([userId, userData], index) => {
+      const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `${index + 1}.`
+      return `${medal} <@${userId}> - ${userData.achievementCount} achievements`
+    },
+    {
+      title: "🏆 Achievements Leaderboard",
+      description: "Users with the most achievements",
+      color: "#E91E63",
+      useFields: false,
+      footerText: "Powered By Aegisum Eco System"
+    }
+  )
+
+  return pages
+}
+
+async function generateStreaksLeaderboard(db, guild) {
+  const users = Object.entries(db.users || {})
+    .map(([userId, userData]) => {
+      const longestStreak = userData.streak?.longest || 0
+      return [userId, { ...userData, longestStreak }]
     })
+    .filter(([userId, userData]) => userData.longestStreak > 0 && !userData.privacyEnabled)
+    .sort(([, a], [, b]) => b.longestStreak - a.longestStreak)
+
+  if (users.length === 0) {
+    const embed = new EmbedBuilder()
+      .setTitle("🔥 Donation Streaks Leaderboard")
+      .setDescription("❌ No streaks found yet.")
+      .setColor("#F44336")
+      .setFooter({ text: "Powered By Aegisum Eco System" })
+    return [embed]
   }
 
-  const embed = new EmbedBuilder()
-    .setTitle("🏆 Achievements Leaderboard")
-    .setDescription("Users with the most achievements")
-    .setColor(db.config?.theme?.special || "#E91E63")
+  const pages = createPaginatedEmbeds(
+    users,
+    15, // 15 users per page
+    ([userId, userData], index) => {
+      const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `${index + 1}.`
+      const currentStreak = userData.streak?.current || 0
+      return `${medal} <@${userId}> - ${userData.longestStreak} days (current: ${currentStreak})`
+    },
+    {
+      title: "🔥 Donation Streaks Leaderboard",
+      description: "Longest donation streaks",
+      color: "#FF5722",
+      useFields: false,
+      footerText: "Powered By Aegisum Eco System"
+    }
+  )
 
-  let leaderboardText = ""
-  for (let i = 0; i < users.length; i++) {
-    const [userId, userData] = users[i]
-    const user = await interaction.guild.members.fetch(userId).catch(() => null)
-    const username = user?.user.username || "Unknown User"
-    const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}.`
-    
-    leaderboardText += `${medal} **${username}** - ${userData.achievementCount} achievements\n`
-  }
-
-  embed.addFields({
-    name: "Achievement Leaders",
-    value: leaderboardText,
-    inline: false,
-  })
-
-  embed.setFooter({ text: "Powered By Aegisum Eco System" })
-  await interaction.reply({ embeds: [embed] })
+  return pages
 }

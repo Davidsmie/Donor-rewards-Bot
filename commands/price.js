@@ -425,7 +425,9 @@ async function getCoinPaprikaPrice(symbol) {
       'AVAX': 'avax-avalanche',
       'TON': 'ton-the-open-network',
       'TRON': 'trx-tron',
-      'AEGS': 'aegs-aegisum'
+      'AEGS': 'aegs-aegisum',
+      'SHIC': 'shic-shibacoin',
+      'SHIBACOIN': 'shic-shibacoin'
     }
     
     const coinId = symbolToId[symbol]

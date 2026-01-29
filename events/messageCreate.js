@@ -6,13 +6,26 @@ import fetch from "node-fetch"
 export const name = Events.MessageCreate
 
 export async function execute(message) {
-  if (message.author.bot) return
-
-  // Check for tip.cc donations
-  if (message.author.id === "617037497574359050") {
-    // tip.cc bot ID
-    await handleTipccDonation(message)
+  // Only process messages in the fundraising channel
+  const FUNDRAISING_CHANNEL_ID = "1341173038514704465"
+  
+  // Check for tip.cc donations BEFORE filtering out bots
+  const tipccBotId = "617037497574359050" // tip.cc#7731
+  
+  // Log all bot messages for debugging (only in fundraising channel)
+  if (message.author.bot && message.channelId === FUNDRAISING_CHANNEL_ID) {
+    logger.info(`🤖 Bot message from ${message.author.tag} (ID: ${message.author.id}): "${message.content}"`)
+    
+    if (message.author.id === tipccBotId) {
+      logger.info(`🔍 Detected tip.cc message from bot ID: ${message.author.id}`)
+      logger.info(`🔍 Message content: "${message.content}"`)
+      await handleTipccDonation(message)
+      return
+    }
   }
+  
+  // Filter out other bot messages or messages not in fundraising channel
+  if (message.author.bot || message.channelId !== FUNDRAISING_CHANNEL_ID) return
 }
 
 async function handleTipccDonation(message) {
@@ -22,8 +35,10 @@ async function handleTipccDonation(message) {
 
     const db = getDatabase(serverId)
 
-    // Parse tip.cc message - Updated regex to handle animated emojis
-    const tipRegex = /<(?:a?):(\w+):\d+>|💰\s*<@!?(\d+)>\s*sent\s*<@!?(\d+)>\s*(?:\*\*)?(\d+(?:\.\d+)?)\s*(\w+)(?:\*\*)?(?:\s*\(≈\s*\$(\d+(?:\.\d+)?)\))?/i
+    // Parse tip.cc message - Actual format from logs
+    // Format: <:AEGS:1373256640392073328> <@!659745190382141453> sent <@1335058459720417280> **50.00 AEGS**.
+    // Format: <:SYMBOL:ID> <@!SENDER> sent <@RECIPIENT> **AMOUNT SYMBOL**.
+    const tipRegex = /<a?:\w+:\d+>\s*<@!?(\d+)>\s*sent\s*<@!?(\d+)>\s*\*\*(\d+(?:\.\d+)?)\s*(\w+)\*\*\.?/i
     
     logger.info(`🔍 Processing tip.cc message: "${message.content}"`)
     
@@ -35,7 +50,7 @@ async function handleTipccDonation(message) {
 
     // Extract data from the match
     // Format: <emoji> <@!senderID> sent <@!recipientID> amount SYMBOL (≈ $usdValue)
-    const [, , senderId, recipientId, amount, currency, extractedUsdValue] = match
+    const [, senderId, recipientId, amount, currency, extractedUsdValue] = match
     
     if (!senderId || !recipientId || !amount || !currency) {
       logger.info(`🔍 Incomplete tip data in message: "${message.content}"`)
@@ -87,6 +102,13 @@ async function handleTipccDonation(message) {
 
     if (!senderMember) {
       logger.info(`🔍 Could not find sender with ID ${senderId}`)
+      return
+    }
+    
+    // Check if sender is blacklisted
+    const isBlacklisted = db.config?.globalBlacklist?.users?.some(entry => entry.id === senderMember.user.id)
+    if (isBlacklisted) {
+      logger.info(`🔍 Sender ${senderMember.user.id} is blacklisted, ignoring donation`)
       return
     }
     
@@ -193,36 +215,48 @@ async function handleTipccDonation(message) {
     
     logger.info(`✅ Donation processed successfully`)
 
-    // Send confirmation
+    // Send confirmation message (like in the reference image)
     if (entriesAdded > 0) {
-      // Create a more detailed confirmation message
-      let confirmationMessage = `🎉 **Thank you for your donation!** 🎉\n\n`
-      confirmationMessage += `<@${senderMember.user.id}> just donated **$${usdValue.toFixed(2)}** and received **${entriesAdded}** draw entries!\n\n`
-      
-      // Add entries by draw
-      confirmationMessage += `📋 **Entries Added:**\n`
-      for (const [drawId, entries] of Object.entries(entriesByDraw)) {
-        const drawName = db.donationDraws[drawId]?.name || drawId
-        confirmationMessage += `• **${drawName}**: ${entries} entries\n`
-      }
-      
-      // Add total donated
-      confirmationMessage += `\n💰 **Donation Amount:** $${usdValue.toFixed(2)}\n`
-      confirmationMessage += `💵 **Total Donated:** $${db.users[senderMember.user.id].totalDonated.toFixed(2)}\n\n`
-      
-      // Add helpful commands
-      confirmationMessage += `📝 Use \`/user entries\` to see all your entries across draws!\n`
-      confirmationMessage += `🎯 Use \`/user select_draw\` to choose a different draw for your next donation!\n\n`
-      
-      // Add thank you message
-      confirmationMessage += `Thank you for supporting our community! ❤️`
+      try {
+        const { EmbedBuilder } = await import("discord.js")
+        
+        const embed = new EmbedBuilder()
+          .setColor("#4CAF50")
+          .setTitle("🎉 Thank you for your donation! 🎉")
+          .setDescription(`<@${senderMember.user.id}> just donated **$${usdValue.toFixed(2)}** and received **${entriesAdded} draw entries**!`)
+          
+        // Add entries by draw
+        let entriesText = ""
+        for (const [drawId, entries] of Object.entries(entriesByDraw)) {
+          const drawName = db.donationDraws[drawId]?.name || drawId
+          entriesText += `• **${drawName}**: ${entries} entries\n`
+        }
+        
+        embed.addFields(
+          { name: "🎟️ Entries Added:", value: entriesText, inline: false },
+          { name: "💰 Donation Amount:", value: `$${usdValue.toFixed(2)}`, inline: true },
+          { name: "💵 Total Donated:", value: `$${db.users[senderMember.user.id].totalDonated.toFixed(2)}`, inline: true }
+        )
+        
+        embed.addFields(
+          { name: "📝 Commands", value: "📋 Use `/user entries` to see all your entries across draws!\n🎯 Use `/user select_draw` to choose a different draw for your next donation!", inline: false }
+        )
+        
+        embed.setFooter({ text: "Thank you for supporting our community! ❤️" })
+        embed.setTimestamp()
 
-      await message.channel.send(confirmationMessage)
+        await message.channel.send({ embeds: [embed] })
+      } catch (embedError) {
+        // Fallback to simple message if embed fails
+        const simpleMessage = `🎉 **Thank you for your donation!** 🎉\n\n<@${senderMember.user.id}> just donated $${usdValue.toFixed(2)} and received ${entriesAdded} draw entries!\n\nThank you for supporting our community! ❤️`
+        await message.channel.send(simpleMessage)
+      }
     }
 
     logger.info(`Processed donation: ${senderMember.user.id} -> $${usdValue.toFixed(2)} (${entriesAdded} entries)`)
   } catch (error) {
     logger.error("Error processing tip.cc donation:", error)
+    logger.error("Error stack:", error.stack)
   }
 }
 
@@ -231,43 +265,49 @@ async function checkAndAssignAchievements(db, userId) {
     const user = db.users[userId]
     if (!user) return
     
-    // Define achievements
+    // Define achievements with minimum donation requirements
     const achievements = [
       {
         id: "first_steps",
         name: "First Steps",
         description: "Made your first donation",
-        check: (user) => user.donations.length > 0,
+        minDonation: 0.01, // Minimum $0.01 to prevent spam
+        check: (user) => user.donations.length > 0 && user.totalDonated >= 0.01,
       },
       {
         id: "generous_donor",
         name: "Generous Donor",
         description: "Donated at least $100",
+        minDonation: 100,
         check: (user) => user.totalDonated >= 100,
       },
       {
         id: "big_spender",
         name: "Big Spender",
         description: "Donated at least $500",
+        minDonation: 500,
         check: (user) => user.totalDonated >= 500,
       },
       {
         id: "whale",
         name: "Whale",
         description: "Donated at least $1,000",
+        minDonation: 1000,
         check: (user) => user.totalDonated >= 1000,
       },
       {
         id: "lucky_winner",
         name: "Lucky Winner",
         description: "Won a donation draw",
-        check: (user) => user.wins > 0,
+        minDonation: 0.01, // Must have donated at least once
+        check: (user) => user.wins > 0 && user.totalDonated >= 0.01,
       },
       {
         id: "streak_master",
         name: "Streak Master",
         description: "Maintained a 7-day donation streak",
-        check: (user) => user.streak?.longest >= 7,
+        minDonation: 0.01, // Must have donated at least once
+        check: (user) => user.streak?.longest >= 7 && user.totalDonated >= 0.01,
       }
     ]
     
@@ -278,6 +318,9 @@ async function checkAndAssignAchievements(db, userId) {
     for (const achievement of achievements) {
       // Skip if already earned
       if (user.achievements.includes(achievement.id)) continue
+      
+      // Check minimum donation requirement first
+      if (user.totalDonated < achievement.minDonation) continue
       
       // Check if achievement should be awarded
       if (achievement.check(user)) {
@@ -301,11 +344,21 @@ async function getCryptoPrice(symbol, amount) {
       if (aegsPrice) return aegsPrice
     }
     
+    // Try CoinPaprika API first for SHIC
+    if (normalizedSymbol === 'SHIC') {
+      const paprikaPrice = await getCoinPaprikaPrice(normalizedSymbol, amount)
+      if (paprikaPrice) return paprikaPrice
+    }
+    
     // Try CoinGecko API
     const geckoPrice = await getCoinGeckoPrice(normalizedSymbol, amount)
     if (geckoPrice) return geckoPrice
     
-    // Try CoinMarketCap API as fallback
+    // Try CoinPaprika API as fallback
+    const paprikaPrice = await getCoinPaprikaPrice(normalizedSymbol, amount)
+    if (paprikaPrice) return paprikaPrice
+    
+    // Try CoinMarketCap API as last resort
     const cmcPrice = await getCoinMarketCapPrice(normalizedSymbol, amount)
     if (cmcPrice) return cmcPrice
     
@@ -382,6 +435,36 @@ async function getCoinGeckoPrice(symbol, amount) {
     return null
   } catch (error) {
     logger.error(`Error fetching CoinGecko price for ${symbol}:`, error)
+    return null
+  }
+}
+
+async function getCoinPaprikaPrice(symbol, amount) {
+  try {
+    const normalizedSymbol = symbol.toUpperCase()
+    
+    // Direct API call for SHIC
+    if (normalizedSymbol === 'SHIC') {
+      const response = await fetch('https://api.coinpaprika.com/v1/tickers/shic-shibacoin')
+      
+      if (!response.ok) {
+        logger.warn(`CoinPaprika API returned status ${response.status} for ${symbol}`)
+        return null
+      }
+      
+      const data = await response.json()
+      
+      if (data && data.quotes && data.quotes.USD && data.quotes.USD.price) {
+        const price = data.quotes.USD.price
+        const totalValue = price * amount
+        logger.info(`🔍 CoinPaprika price for ${symbol}: $${price.toFixed(8)} (Total: $${totalValue.toFixed(4)})`)
+        return totalValue
+      }
+    }
+    
+    return null
+  } catch (error) {
+    logger.error(`Error fetching CoinPaprika price for ${symbol}:`, error)
     return null
   }
 }
